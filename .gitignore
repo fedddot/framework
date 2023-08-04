@@ -1,0 +1,8 @@
+*.*
+build/
+!*.c
+!*.cpp
+!*.h
+!*.hpp
+!*.txt
+!.gitignore

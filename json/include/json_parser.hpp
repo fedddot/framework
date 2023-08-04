@@ -8,10 +8,8 @@
 #include "idata.hpp"
 #include "idata_parser.hpp"
 
-namespace json
-{
-	class JsonParser : public data::IDataParser
-	{
+namespace json {
+	class JsonParser : public data::IDataParser {
 	public:
 		virtual std::shared_ptr<data::IData> parse(std::istream& data_stream) override;
 
@@ -26,8 +24,7 @@ namespace json
 		static void skipBulks(std::istream& data_stream);
 		static void skipBetweenFieldNameAndMember(std::istream& data_stream);
 		static void skipAfterMember(std::istream& data_stream, char expected_closing_bracket);
-
-	};
-}
+	}; // JsonParser
+} // namespace json
 
 #endif // __JSON_PARSER_HPP__

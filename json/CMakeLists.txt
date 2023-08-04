@@ -7,6 +7,15 @@ target_include_directories(
 	${CMAKE_SOURCE_DIR}/data/include
 )
 
+add_library(json_serializer INTERFACE)
+target_sources(json_serializer INTERFACE ${CMAKE_CURRENT_LIST_DIR}/src/json_serializer.cpp)
+target_include_directories(
+	json_serializer 
+	INTERFACE 
+	${CMAKE_CURRENT_LIST_DIR}/include
+	${CMAKE_SOURCE_DIR}/data/include
+)
+
 add_library(json_common INTERFACE)
 target_sources(json_common INTERFACE ${CMAKE_CURRENT_LIST_DIR}/src/json_common.cpp)
 target_include_directories(

@@ -10,7 +10,7 @@ namespace data {
 	public:
 		virtual std::shared_ptr<IData> parse(std::istream& data_stream) = 0;
 		virtual ~IDataParser() noexcept = 0;
-	}; // IData
+	}; // IDataParser
 } // namespace data
 
 #endif // __IDATA_PARSER_HPP__

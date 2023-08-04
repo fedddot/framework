@@ -9,3 +9,4 @@ add_subdirectory(${GTEST_DIR} ${CMAKE_BINARY_DIR}/gtest EXCLUDE_FROM_ALL)
 
 add_subdirectory(data)
 add_subdirectory(json)
+add_subdirectory(task)

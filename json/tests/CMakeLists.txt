@@ -9,6 +9,7 @@ target_link_libraries(
 	PRIVATE
 	
 	json_parser
+	json_serializer
 	json_common
 	
 	idata

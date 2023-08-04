@@ -3,8 +3,12 @@ target_sources(idata INTERFACE ${CMAKE_CURRENT_LIST_DIR}/src/idata.cpp)
 target_include_directories(idata INTERFACE INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
 
 add_library(idata_parser INTERFACE)
-target_sources(idata INTERFACE ${CMAKE_CURRENT_LIST_DIR}/src/idata_parser.cpp)
+target_sources(idata_parser INTERFACE ${CMAKE_CURRENT_LIST_DIR}/src/idata_parser.cpp)
 target_include_directories(idata_parser INTERFACE INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
+
+add_library(idata_serializer INTERFACE)
+target_sources(idata_serializer INTERFACE ${CMAKE_CURRENT_LIST_DIR}/src/idata_serializer.cpp)
+target_include_directories(idata_serializer INTERFACE INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
 
 add_library(composite INTERFACE)
 target_sources(composite INTERFACE ${CMAKE_CURRENT_LIST_DIR}/src/composite.cpp)

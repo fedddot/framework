@@ -18,7 +18,7 @@ std::string JsonSerializer::serialize(const IData& data) {
 	case IData::DataType::COMPOSITE:
 		return serializeComposite(data);
 	case IData::DataType::VALUE:
-		return serializeComposite(data);
+		return serializeValue(data);
 	default:
 		break;
 	}
@@ -26,7 +26,7 @@ std::string JsonSerializer::serialize(const IData& data) {
 }
 
 std::string JsonSerializer::serializeComposite(const IData& data) {
-	auto composite_data = dynamic_cast<const Composite&>(data);
+	const Composite& composite_data = dynamic_cast<const Composite&>(data);
 	switch (composite_data.getCompositeType()) {
 	case Composite::CompositeType::ARRAY:
 		return serializeArray(data);
@@ -79,7 +79,7 @@ std::string JsonSerializer::serializeObject(const IData& data) {
 }
 
 std::string JsonSerializer::serializeValue(const IData& data) {
-	auto data_value = dynamic_cast<const Value&>(data);
+	const Value& data_value = dynamic_cast<const Value&>(data);
 	switch (data_value.getDataValueType()) {
 	case Value::DataValueType::STRING:
 		return serializeString(data);
@@ -118,6 +118,6 @@ JsonSerializer::BadMember::BadMember(const std::string& where, const std::string
 	m_msg = msg_stream.str();
 }
 
-const char *JsonSerializer::UnexpectedDataType::what() const noexcept {
+const char *JsonSerializer::BadMember::what() const noexcept {
 	return m_msg.c_str();
 }

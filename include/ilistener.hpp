@@ -8,6 +8,11 @@ namespace common {
 		virtual ~IListener() noexcept = 0;
 		virtual void onEvent(Event event) = 0;
 	}; // IListener
+
+	template <class Event>
+	IListener<Event>::~IListener() noexcept {
+
+	}
 } // namespace common
 
 #endif // __ILISTENER_HPP__

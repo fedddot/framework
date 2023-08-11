@@ -1,7 +1,7 @@
 #ifndef	__IDATA_SENDER_HPP__
 #define	__IDATA_SENDER_HPP__
 
-namespace data {
+namespace communication {
 	template <class T>
 	class IDataSender {
 	public:
@@ -13,5 +13,5 @@ namespace data {
 	IDataSender<T>::~IDataSender() noexcept {
 		
 	}
-} // namespace data
+} // namespace communication
 #endif // __IDATA_SENDER_HPP__

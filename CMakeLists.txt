@@ -16,3 +16,4 @@ target_include_directories(itask INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
 
 add_subdirectory(data)
 add_subdirectory(json)
+add_subdirectory(communication)

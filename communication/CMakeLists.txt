@@ -8,7 +8,3 @@ target_link_libraries(ireceiver INTERFACE ilistener)
 add_library(icommunication_manager INTERFACE)
 target_include_directories(icommunication_manager INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
 target_link_libraries(icommunication_manager INTERFACE isender ireceiver)
-
-add_library(communication_manager INTERFACE)
-target_include_directories(communication_manager INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
-target_link_libraries(communication_manager INTERFACE icommunication_manager)

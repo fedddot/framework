@@ -4,7 +4,15 @@ target_include_directories(
 	json_parser 
 	INTERFACE 
 	${CMAKE_CURRENT_LIST_DIR}/include
-	${CMAKE_SOURCE_DIR}/data/include
+)
+target_link_libraries(
+	json_parser 
+	INTERFACE
+	idata
+	idata_parser 
+	string
+	array
+	object
 )
 
 add_library(json_serializer INTERFACE)
@@ -13,7 +21,15 @@ target_include_directories(
 	json_serializer 
 	INTERFACE 
 	${CMAKE_CURRENT_LIST_DIR}/include
-	${CMAKE_SOURCE_DIR}/data/include
+)
+target_link_libraries(
+	json_serializer 
+	INTERFACE
+	idata
+	idata_serializer 
+	string
+	array
+	object
 )
 
 add_library(json_common INTERFACE)

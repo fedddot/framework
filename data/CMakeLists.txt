@@ -25,12 +25,3 @@ target_include_directories(array INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
 add_library(string INTERFACE)
 target_sources(string INTERFACE ${CMAKE_CURRENT_LIST_DIR}/src/string.cpp)
 target_include_directories(string INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
-
-add_library(data_sender INTERFACE)
-target_sources(data_sender INTERFACE ${CMAKE_CURRENT_LIST_DIR}/src/data_sender.cpp)
-target_include_directories(data_sender INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
-
-add_library(data_receiver INTERFACE)
-target_sources(data_receiver INTERFACE ${CMAKE_CURRENT_LIST_DIR}/src/data_receiver.cpp)
-target_link_libraries(data_receiver INTERFACE ilistener)
-target_include_directories(data_receiver INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)

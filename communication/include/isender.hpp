@@ -6,7 +6,7 @@ namespace communication {
 	class ISender {
 	public:
 		virtual ~ISender() noexcept = 0;
-		virtual void send(T data) = 0;
+		virtual void send(const T& data) = 0;
 	}; // ISender
 
 	template <class T>

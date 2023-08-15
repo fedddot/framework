@@ -9,9 +9,9 @@
 #include "idata_parser.hpp"
 
 namespace json {
-	class JsonParser : public data::IDataParser {
+	class JsonParser : public data::IParser<std::istream, std::shared_ptr<data::IData>> {
 	public:
-		virtual std::shared_ptr<data::IData> parse(std::istream& data_stream) override;
+		virtual std::shared_ptr<data::IData> parse(const std::istream& data_stream) override;
 
 	private:
 		std::shared_ptr<data::IData> parseString(std::istream& data_stream);

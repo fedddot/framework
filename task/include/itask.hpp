@@ -1,7 +1,7 @@
 #ifndef	__ITASK_HPP__
 #define	__ITASK_HPP__
 
-namespace common {
+namespace task {
 	class ITask {
 	public:
 		virtual ~ITask() noexcept = 0;

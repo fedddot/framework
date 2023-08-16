@@ -13,7 +13,7 @@
 using namespace json;
 using namespace data;
 
-std::string JsonSerializer::serialize(const IData& data) {
+std::vector<char> JsonSerializer::serialize(const IData& data) {
 	switch (data.getDataType()) {
 	case IData::DataType::COMPOSITE:
 		return serializeComposite(data);
@@ -22,10 +22,10 @@ std::string JsonSerializer::serialize(const IData& data) {
 	default:
 		break;
 	}
-	throw UnexpectedDataType("JsonSerializer::serialize", "");
+	throw UnexpectedDataType("serialize");
 }
 
-std::string JsonSerializer::serializeComposite(const IData& data) {
+std::vector<char> JsonSerializer::serializeComposite(const IData& data) {
 	const Composite& composite_data = dynamic_cast<const Composite&>(data);
 	switch (composite_data.getCompositeType()) {
 	case Composite::CompositeType::ARRAY:
@@ -35,50 +35,59 @@ std::string JsonSerializer::serializeComposite(const IData& data) {
 	default:
 		break;
 	}
-	throw UnexpectedDataType("JsonSerializer::serializeComposite", "");
+	throw UnexpectedDataType("serializeComposite");
 }
 
-std::string JsonSerializer::serializeArray(const IData& data) {
+std::vector<char> JsonSerializer::serializeArray(const IData& data) {
 	auto array = dynamic_cast<const Array&>(data);
-	std::stringstream serial_data;
-	serial_data << static_cast<char>(JsonSpecialChar::ARRAY_START);
+	std::vector<char> serial_data;
+	serial_data.push_back(static_cast<char>(JsonSpecialChar::ARRAY_START));
 	auto iter = array.begin();
 	while (array.end() != iter) {
 		auto member_ptr = *iter;
 		if (nullptr == member_ptr) {
-			throw BadMember("JsonSerializer::serializeArray", "nullptr");
+			throw BadMemberPointer("serializeArray");
 		}
-		serial_data << serialize(*member_ptr);
+		auto serial_member = serialize(*member_ptr);
+		serial_data.insert(serial_data.end(), serial_member.begin(), serial_member.end());
 		++iter;
 		if (array.end() != iter) {
-			serial_data << static_cast<char>(JsonSpecialChar::DELIMITER) << static_cast<char>(JsonSpecialChar::SPACE);
+			serial_data.push_back(static_cast<char>(JsonSpecialChar::DELIMITER));
+			serial_data.push_back(static_cast<char>(JsonSpecialChar::SPACE));
 		}
 	}
-	serial_data << static_cast<char>(JsonSpecialChar::ARRAY_END);
-	return serial_data.str();
+	serial_data.push_back(static_cast<char>(JsonSpecialChar::ARRAY_END));
+	return serial_data;
 }
 
-std::string JsonSerializer::serializeObject(const IData& data) {
+std::vector<char> JsonSerializer::serializeObject(const IData& data) {
 	auto object = dynamic_cast<const Object&>(data);
-	std::stringstream serial_data;
-	serial_data << static_cast<char>(JsonSpecialChar::OBJECT_START);
+	std::vector<char> serial_data;
+	serial_data.push_back(static_cast<char>(JsonSpecialChar::OBJECT_START));
 	auto iter = object.begin();
 	while (object.end() != iter) {
 		auto member_ptr = iter->second;
 		if (nullptr == member_ptr) {
-			throw BadMember("JsonSerializer::serializeObject", "nullptr");
+			throw BadMemberPointer("serializeObject");
 		}
-		serial_data << static_cast<char>(JsonSpecialChar::STRING_START) << iter->first << static_cast<char>(JsonSpecialChar::STRING_END) << static_cast<char>(JsonSpecialChar::SEMICOLON) << static_cast<char>(JsonSpecialChar::SPACE) << serialize(*member_ptr);
+		auto serial_member = serialize(*member_ptr);
+		auto field_name = serialize(String(iter->first));
+		
+		serial_data.insert(serial_data.end(), field_name.begin(), field_name.end());
+		serial_data.push_back(static_cast<char>(JsonSpecialChar::SEMICOLON));
+		serial_data.push_back(static_cast<char>(JsonSpecialChar::SPACE));
+		serial_data.insert(serial_data.end(), serial_member.begin(), serial_member.end());
 		++iter;
 		if (object.end() != iter) {
-			serial_data << static_cast<char>(JsonSpecialChar::DELIMITER) << static_cast<char>(JsonSpecialChar::SPACE);
+			serial_data.push_back(static_cast<char>(JsonSpecialChar::DELIMITER));
+			serial_data.push_back(static_cast<char>(JsonSpecialChar::SPACE));
 		}
 	}
-	serial_data << static_cast<char>(JsonSpecialChar::OBJECT_END);
-	return serial_data.str();
+	serial_data.push_back(static_cast<char>(JsonSpecialChar::OBJECT_END));
+	return serial_data;
 }
 
-std::string JsonSerializer::serializeValue(const IData& data) {
+std::vector<char> JsonSerializer::serializeValue(const IData& data) {
 	const Value& data_value = dynamic_cast<const Value&>(data);
 	switch (data_value.getDataValueType()) {
 	case Value::DataValueType::STRING:
@@ -86,38 +95,26 @@ std::string JsonSerializer::serializeValue(const IData& data) {
 	default:
 		break;
 	}
-	throw UnexpectedDataType("JsonSerializer::serializeValue", "");
+	throw UnexpectedDataType("serializeValue");
 }
 
-std::string JsonSerializer::serializeString(const IData& data) {
+std::vector<char> JsonSerializer::serializeString(const IData& data) {
 	auto str = dynamic_cast<const String&>(data);
-	std::stringstream serial_data;
-	serial_data << static_cast<char>(JsonSpecialChar::STRING_START) << str << static_cast<char>(JsonSpecialChar::STRING_END);
-	return serial_data.str();
+	std::vector<char> serial_str;
+	serial_str.push_back(static_cast<char>(JsonSpecialChar::STRING_START));
+	serial_str.insert(serial_str.end(), str.begin(), str.end());
+	serial_str.push_back(static_cast<char>(JsonSpecialChar::STRING_END));
+	return serial_str;
 }
 
-JsonSerializer::UnexpectedDataType::UnexpectedDataType(const std::string& where, const std::string& note): m_msg("") {
-	std::stringstream msg_stream;
-	msg_stream << "Data of unexpected type received at " << where;
-	if (!note.empty()) {
-		msg_stream << " (note: " << note << ")";
-	}
-	m_msg = msg_stream.str();
+JsonSerializer::Exception::Exception(const std::string& msg): m_msg(msg) {
+
 }
 
-const char *JsonSerializer::UnexpectedDataType::what() const noexcept {
-	return m_msg.c_str();
+JsonSerializer::UnexpectedDataType::UnexpectedDataType(const std::string& where): Exception("in JsonSerializer::" + where + ": unexpected data type") {
+
 }
 
-JsonSerializer::BadMember::BadMember(const std::string& where, const std::string& note): m_msg("") {
-	std::stringstream msg_stream;
-	msg_stream << "Bad member pointer received at " << where;
-	if (!note.empty()) {
-		msg_stream << " (note: " << note << ")";
-	}
-	m_msg = msg_stream.str();
-}
+JsonSerializer::BadMemberPointer::BadMemberPointer(const std::string& where): Exception("in JsonSerializer::" + where + ": bad member pointer value") {
 
-const char *JsonSerializer::BadMember::what() const noexcept {
-	return m_msg.c_str();
 }

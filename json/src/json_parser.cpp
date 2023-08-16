@@ -1,9 +1,10 @@
-#include <iostream>
+#include <algorithm>
 #include <memory>
 #include <vector>
-#include <algorithm>
 
 #include "idata.hpp"
+#include "iparser.hpp"
+
 #include "string.hpp"
 #include "array.hpp"
 #include "object.hpp"
@@ -14,139 +15,176 @@
 using namespace json;
 using namespace data;
 
-std::shared_ptr<IData> JsonParser::parse(std::istream& data_stream) {
-	skipBulks(data_stream);
-	if (isEos(data_stream)) {
-		throw JsonParserExceptionUnexpectedEof("JsonParser::parse");
+const std::vector<char> json::JsonParser::m_bulk_chars {
+	static_cast<char>(JsonSpecialChar::SPACE),
+	static_cast<char>(JsonSpecialChar::TAB),
+	static_cast<char>(JsonSpecialChar::NEW_LINE)
+};
+
+std::shared_ptr<data::IData> JsonParser::parse(const std::vector<char>& data) {
+	return parse(data.cbegin(), data.cend()).get_parsed_data();
+}
+
+JsonParser::ParsingResult JsonParser::parse(const const_iter& start_iter, const const_iter& end_iter) {
+	auto parsing_start_iter = skipBulks(start_iter, end_iter);
+	if (end_iter == parsing_start_iter) {
+		throw UnexpectedEndOfData("parse");
 	}
-	char first_char = static_cast<char>(data_stream.peek());
-	switch (first_char) {
+	switch (*parsing_start_iter) {
 	case static_cast<char>(JsonSpecialChar::STRING_START):
-		return parseString(data_stream);
+		return parseString(parsing_start_iter, end_iter);
 	case static_cast<char>(JsonSpecialChar::OBJECT_START):
-		return parseObject(data_stream);
+		return parseObject(parsing_start_iter, end_iter);
 	case static_cast<char>(JsonSpecialChar::ARRAY_START):
-		return parseArray(data_stream);
+		return parseArray(parsing_start_iter, end_iter);
 	default:
 		break;
 	}
-	throw JsonParserExceptionUnexpectedToken("JsonParser::parse", data_stream.tellg(), "\" or { or [", std::string(&first_char, 1));
+	throw UnexpectedCharacter("parse", "either STRING_START, OBJECT_START or ARRAY_START", std::string(parsing_start_iter, parsing_start_iter + 1));
 }
 
-std::shared_ptr<data::IData> JsonParser::parseString(std::istream& data_stream) {
-	char first_char = static_cast<char>(data_stream.peek());
+JsonParser::ParsingResult JsonParser::parseString(const const_iter& start_iter, const const_iter& end_iter) {
+	auto iter = start_iter;
 	const char expected_first_char = static_cast<char>(JsonSpecialChar::STRING_START);
-	if (expected_first_char != first_char) {
-		JsonParserExceptionUnexpectedToken("JsonParser::parseString", data_stream.tellg(), std::string(&expected_first_char, 1), std::string(&first_char, 1));
+	if (expected_first_char != *iter) {
+		throw UnexpectedCharacter("parse", "STRING_START", std::string(start_iter, start_iter + 1));
 	}
-
-	data_stream.get();
+	++iter;
 	String parsed_string("");
-	while (!isEos(data_stream)) {
-		char curr_char = static_cast<char>(data_stream.peek());
-		if (static_cast<char>(JsonSpecialChar::STRING_END) == curr_char) {
-			data_stream.get();
-			return std::shared_ptr<data::IData>(new String(parsed_string));
+	while (end_iter != iter) {
+		if (static_cast<char>(JsonSpecialChar::STRING_END) == *iter) {
+			++iter;
+			return ParsingResult(std::shared_ptr<IData>(new String(parsed_string)), iter);
 		}
-		parsed_string += curr_char;
-		data_stream.get();
+		parsed_string += *iter;
+		++iter;
 	}
-	throw JsonParserExceptionUnexpectedEof("JsonParser::parseString");
+	throw UnexpectedEndOfData("parseString");
 }
 
-std::shared_ptr<data::IData> JsonParser::parseObject(std::istream& data_stream) {
-	char first_char = static_cast<char>(data_stream.peek());
+JsonParser::ParsingResult JsonParser::parseObject(const const_iter& start_iter, const const_iter& end_iter) {
+	auto iter = start_iter;
 	const char expected_first_char = static_cast<char>(JsonSpecialChar::OBJECT_START);
-	if (expected_first_char != first_char) {
-		JsonParserExceptionUnexpectedToken("JsonParser::parseObject", data_stream.tellg(), std::string(&expected_first_char, 1), std::string(&first_char, 1));
+	if (expected_first_char != *iter) {
+		throw UnexpectedCharacter("parseObject", "OBJECT_START", std::string(start_iter, start_iter + 1));
 	}
-
-	data_stream.get();
-	skipBulks(data_stream);
+	++iter;
+	iter = skipBulks(iter, end_iter);
 	Object parsed_object;
-	while (!isEos(data_stream)) {
-		char curr_char = static_cast<char>(data_stream.peek());
-		if (static_cast<char>(JsonSpecialChar::OBJECT_END) == curr_char) {
-			data_stream.get();
-			return std::shared_ptr<data::IData>(new Object(parsed_object));
+	while (end_iter != iter) {
+		if (static_cast<char>(JsonSpecialChar::OBJECT_END) == *iter) {
+			++iter;
+			return ParsingResult(std::shared_ptr<IData>(new Object(parsed_object)), iter);
 		}
-		auto field_name_ptr = parseString(data_stream);
-		String field_name(*field_name_ptr);
-		skipBetweenFieldNameAndMember(data_stream);
-		auto member_ptr = parse(data_stream);
-		parsed_object[field_name] = member_ptr;
-		skipAfterMember(data_stream, static_cast<char>(JsonSpecialChar::OBJECT_END));
+		auto field_name_parsed = parseString(iter, end_iter);
+		iter = field_name_parsed.get_parsing_end_iter();
+		String field_name(*(field_name_parsed.get_parsed_data()));
+		iter = skipBetweenFieldNameAndMember(iter, end_iter);
+
+		auto member_parsed = parse(iter, end_iter);
+		iter = member_parsed.get_parsing_end_iter();
+		parsed_object.insert({field_name, member_parsed.get_parsed_data()});
+		iter = skipAfterMember(iter, end_iter, static_cast<char>(JsonSpecialChar::OBJECT_END));
 	}
-	throw JsonParserExceptionUnexpectedEof("JsonParser::parseObject");
+	throw UnexpectedEndOfData("parseObject");
 }
 
-std::shared_ptr<data::IData> JsonParser::parseArray(std::istream& data_stream) {
-	char first_char = static_cast<char>(data_stream.peek());
+JsonParser::ParsingResult JsonParser::parseArray(const const_iter& start_iter, const const_iter& end_iter) {
+	auto iter = start_iter;
 	const char expected_first_char = static_cast<char>(JsonSpecialChar::ARRAY_START);
-	if (expected_first_char != first_char) {
-		JsonParserExceptionUnexpectedToken("JsonParser::parseArray", data_stream.tellg(), std::string(&expected_first_char, 1), std::string(&first_char, 1));
+	if (expected_first_char != *iter) {
+		throw UnexpectedCharacter("parseArray", "ARRAY_START", std::string(start_iter, start_iter + 1));
 	}
-
-	data_stream.get();
-	skipBulks(data_stream);
+	++iter;
+	iter = skipBulks(iter, end_iter);
 	Array parsed_array;
-	while (!data_stream.eof()) {
-		char curr_char = static_cast<char>(data_stream.peek());
-		if (static_cast<char>(JsonSpecialChar::ARRAY_END) == curr_char) {
-			data_stream.get();
-			return std::shared_ptr<data::IData>(new Array(parsed_array));
+	while (end_iter != iter) {
+		if (static_cast<char>(JsonSpecialChar::ARRAY_END) == *iter) {
+			++iter;
+			return ParsingResult(std::shared_ptr<IData>(new Array(parsed_array)), iter);
 		}
-		auto member_ptr = parse(data_stream);
-		parsed_array.push_back(member_ptr);
-		skipAfterMember(data_stream, static_cast<char>(JsonSpecialChar::ARRAY_END));
+		auto member_parsed = parse(iter, end_iter);
+		iter = member_parsed.get_parsing_end_iter();
+		parsed_array.push_back(member_parsed.get_parsed_data());
+		iter = skipAfterMember(iter, end_iter, static_cast<char>(JsonSpecialChar::ARRAY_END));
 	}
-	throw JsonParserExceptionUnexpectedEof("JsonParser::parseArray");
+	throw UnexpectedEndOfData("parseArray");
 }
 
-bool JsonParser::isEos(std::istream& data_stream) {
-	return (EOF == data_stream.peek());
-}
-
-void JsonParser::skipChars(std::istream& data_stream, const std::vector<char>& chars) {
-	while (!isEos(data_stream)) {
-		auto iter = std::find(chars.begin(), chars.end(), data_stream.peek());
-		if (chars.end() == iter) {
-			return;
+const JsonParser::const_iter JsonParser::skipChars(const const_iter& start_iter, const const_iter& end_iter, const std::vector<char>& chars) {
+	auto iter = start_iter;
+	while (end_iter != iter) {
+		auto chars_iter = std::find(chars.begin(), chars.end(), *iter);
+		if (chars.end() == chars_iter) {
+			break;
 		}
-		data_stream.get();
+		++iter;
 	}
+	return iter;
 }
 
-void JsonParser::skipBulks(std::istream& data_stream) {
-	const std::vector<char> bulk_chars {
-		static_cast<char>(JsonSpecialChar::SPACE),
-		static_cast<char>(JsonSpecialChar::TAB),
-		static_cast<char>(JsonSpecialChar::NEW_LINE)
-	};
-	skipChars(data_stream, bulk_chars);
+const JsonParser::const_iter JsonParser::skipBulks(const const_iter& start_iter, const const_iter& end_iter) {
+	return skipChars(start_iter, end_iter, m_bulk_chars);
 }
 
-void JsonParser::skipBetweenFieldNameAndMember(std::istream& data_stream) {
-	skipBulks(data_stream);
-	const char token = static_cast<char>(data_stream.peek());
+const JsonParser::const_iter JsonParser::skipBetweenFieldNameAndMember(const const_iter& start_iter, const const_iter& end_iter) {
+	auto iter = start_iter;
+	iter = skipBulks(iter, end_iter);
+	if (end_iter == iter) {
+		UnexpectedEndOfData("skipBetweenFieldNameAndMember");
+	}
 	const char expected_token = static_cast<char>(JsonSpecialChar::SEMICOLON);
-	if (expected_token != token) {
-		JsonParserExceptionUnexpectedToken("JsonParser::skipBetweenFieldNameAndMember", data_stream.tellg(), std::string(&expected_token, 1), std::string(&token, 1));
+	if (expected_token != *iter) {
+		UnexpectedCharacter("skipBetweenFieldNameAndMember", std::string(&expected_token, 1), std::string(iter, iter + 1));
 	}
-	data_stream.get();
-	skipBulks(data_stream);
+	++iter;
+	iter = skipBulks(iter, end_iter);
+	if (end_iter == iter) {
+		UnexpectedEndOfData("skipBetweenFieldNameAndMember");
+	}
+	return iter;
 }
 
-void JsonParser::skipAfterMember(std::istream& data_stream, char expected_closing_bracket) {
-	skipBulks(data_stream);
-	const char token = static_cast<char>(data_stream.peek());
-	if (static_cast<char>(JsonSpecialChar::DELIMITER) == token) {
-		data_stream.get();
-		skipBulks(data_stream);
-		return;
+const JsonParser::const_iter JsonParser::skipAfterMember(const const_iter& start_iter, const const_iter& end_iter, char expected_closing_bracket) {
+	auto iter = start_iter;
+	iter = skipBulks(iter, end_iter);
+	if (end_iter == iter) {
+		UnexpectedEndOfData("skipAfterMember");
 	}
+	const char expected_token = static_cast<char>(JsonSpecialChar::DELIMITER);
+	if (expected_token == *iter) {
+		++iter;
+		iter = skipBulks(iter, end_iter);
+		if (end_iter == iter) {
+			UnexpectedEndOfData("skipBetweenFieldNameAndMember");
+		}
+		return iter;
+	}
+	if (expected_closing_bracket != *iter) {
+		UnexpectedCharacter("skipAfterMember", std::string(&expected_closing_bracket, 1), std::string(iter, iter + 1));
+	}
+	return iter;
+}
 
-	if (expected_closing_bracket != token) {
-		JsonParserExceptionUnexpectedToken("JsonParser::skipAfterMember", data_stream.tellg(), std::string(&expected_closing_bracket, 1), std::string(&token, 1));
+JsonParser::ParsingResult::ParsingResult(const std::shared_ptr<IData>& parsed_data, const const_iter& parsing_end_iter): m_parsed_data(init_parsed_data(parsed_data)), m_parsing_end_iter(parsing_end_iter) {
+
+}
+
+std::shared_ptr<IData> JsonParser::ParsingResult::init_parsed_data(const std::shared_ptr<IData>& parsed_data) {
+	if (!parsed_data) {
+		throw std::invalid_argument("invalid data received");
 	}
+	return parsed_data;
+}
+
+JsonParser::Exception::Exception(const std::string& msg): m_msg(msg) {
+
+}
+
+JsonParser::UnexpectedEndOfData::UnexpectedEndOfData(const std::string& where): Exception("in JsonParser::" + where + ": unexpected end of file") {
+	
+}
+
+JsonParser::UnexpectedCharacter::UnexpectedCharacter(const std::string& where, const std::string& expected, const std::string& received): Exception("in JsonParser::" + where + ": unexpected token reveived (expected: \"" + expected + "\"; received: \"" + received + "\")") {
+	
 }

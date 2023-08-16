@@ -13,7 +13,8 @@
 namespace communication {
 	class ByteReceiver: public IReceiver<char, std::shared_ptr<data::IData>> {
 	public:
-		ByteReceiver(const std::vector<char>& header, const std::size_t& length_field_size, const std::size_t& max_data_size, const std::shared_ptr<data::IParser<std::vector<char>, std::shared_ptr<data::IData>>>& parser_ptr);
+		typedef std::shared_ptr<data::IParser<std::vector<char>, std::shared_ptr<data::IData>>> ParserSmartPointer;
+		ByteReceiver(const std::vector<char>& header, const std::size_t& length_field_size, const std::size_t& max_data_size, const ParserSmartPointer& parser_ptr);
 		ByteReceiver(const ByteReceiver& other) = delete;
 		ByteReceiver& operator=(const ByteReceiver& other) = delete;
 
@@ -26,7 +27,7 @@ namespace communication {
 		std::vector<char> m_header;
 		std::size_t m_length_field_size;
 		std::size_t m_max_data_size;
-		std::shared_ptr<data::IParser<std::vector<char>, std::shared_ptr<data::IData>>> m_parser_ptr;
+		ParserSmartPointer m_parser_ptr;
 
 		common::IListener<std::shared_ptr<data::IData>> *m_data_listener_ptr;
 
@@ -46,7 +47,7 @@ namespace communication {
 
 		static std::size_t deserialize_data_length(const std::vector<char>& data);
 		static std::size_t init_length_field_size(const std::size_t& length_field_size);
-		static std::shared_ptr<data::IParser<std::vector<char>, std::shared_ptr<data::IData>>> init_parser_ptr(const std::shared_ptr<data::IParser<std::vector<char>, std::shared_ptr<data::IData>>>& parser_ptr);
+		static ParserSmartPointer init_parser_ptr(const ParserSmartPointer& parser_ptr);
 		
 	}; // ByteReceiver
 

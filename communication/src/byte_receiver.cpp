@@ -74,7 +74,7 @@ void ByteReceiver::receive_data(const char& event) {
 	std::vector<char> data(m_data_buff);
 	reset_receiver();
 	if (m_data_listener_ptr) {
-		m_data_listener_ptr->onEvent(m_parser_ptr->parse(data));
+		m_data_listener_ptr->onEvent(*(m_parser_ptr->parse(data)));
 	}
 }
 
@@ -103,4 +103,11 @@ std::size_t ByteReceiver::deserialize_data_length(const std::vector<char>& data)
 		}
 	);
 	return data_length;
+}
+
+ByteReceiver::ParserSmartPointer ByteReceiver::init_parser_ptr(const ParserSmartPointer& parser_ptr) {
+	if (nullptr == parser_ptr) {
+		throw std::invalid_argument("invalid patser_ptr received");
+	}
+	return parser_ptr;
 }

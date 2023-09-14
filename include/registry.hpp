@@ -10,7 +10,7 @@ namespace common {
 	public:
 		virtual ~Registry() noexcept = default;
 		void register_member(const Tkey& key, const Tmember& member);
-		Tmember unregister_member(const Tkey& key);
+		void unregister_member(const Tkey& key);
 		Tmember& access_member(const Tkey& key);
 		bool is_registered(const Tkey& key) const;
 	private:
@@ -26,14 +26,12 @@ namespace common {
 	}
 
 	template <class Tkey, class Tmember>
-	Tmember Registry<Tkey, Tmember>::unregister_member(const Tkey& key) {
+	void Registry<Tkey, Tmember>::unregister_member(const Tkey& key) {
 		auto iter = m_members.find(key);
 		if (m_members.end() == iter) {
 			throw std::invalid_argument("received key was not registered");
 		}
-		Tmember member(iter->second);
 		m_members.erase(iter);
-		return member;
 	}
 
 	template <class Tkey, class Tmember>

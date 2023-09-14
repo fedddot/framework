@@ -8,7 +8,7 @@ namespace common {
 	template <class Tkey, class Tmember>
 	class Registry {
 	public:
-		~Registry() noexcept = default;
+		virtual ~Registry() noexcept = default;
 		void register_member(const Tkey& key, const Tmember& member);
 		Tmember unregister_member(const Tkey& key);
 		Tmember& access_member(const Tkey& key);

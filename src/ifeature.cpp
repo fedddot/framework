@@ -1,7 +1,7 @@
-#include "iparsable.hpp"
+#include "ifeature.hpp"
 
 using namespace common;
 
-IParsable::~IParsable() noexcept {
+IFeature::~IFeature() noexcept {
 
 }

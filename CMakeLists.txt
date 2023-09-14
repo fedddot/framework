@@ -19,6 +19,10 @@ target_include_directories(factory INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
 add_library(registry INTERFACE)
 target_include_directories(registry INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
 
+add_library(ifeature INTERFACE)
+target_sources(ifeature INTERFACE ${CMAKE_CURRENT_LIST_DIR}/src/ifeature.cpp)
+target_include_directories(ifeature INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
+
 add_subdirectory(data)
 add_subdirectory(task)
 add_subdirectory(json)

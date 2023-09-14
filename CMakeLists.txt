@@ -16,6 +16,9 @@ target_include_directories(icreator INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
 add_library(factory INTERFACE)
 target_include_directories(factory INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
 
+add_library(registry INTERFACE)
+target_include_directories(registry INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
+
 add_subdirectory(data)
 add_subdirectory(task)
 add_subdirectory(json)

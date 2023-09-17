@@ -6,6 +6,7 @@
 
 #include "ilistener.hpp"
 #include "ireceiver.hpp"
+#include "package_types.hpp"
 
 #include "package_receiver.hpp"
 

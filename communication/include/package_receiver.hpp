@@ -7,12 +7,11 @@
 
 #include "ilistener.hpp"
 #include "ireceiver.hpp"
+#include "package_types.hpp"
 
 namespace communication {
-	typedef std::vector<char> Payload;
 	class PackageReceiver: public IReceiver<Payload> {
 	public:
-		typedef std::vector<char> Header;
 		PackageReceiver(const Header& header, const std::size_t& payload_length_field_size, const std::size_t& max_payload_length);
 		PackageReceiver(const PackageReceiver& other) = delete;
 		PackageReceiver& operator=(const PackageReceiver& other) = delete;

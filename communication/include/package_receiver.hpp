@@ -3,16 +3,16 @@
 
 #include <vector>
 #include <cstddef>
-#include <memory>
 
 #include "ilistener.hpp"
 #include "ireceiver.hpp"
-#include "package_types.hpp"
+#include "package_descriptor.hpp"
 
 namespace communication {
-	class PackageReceiver: public IReceiver<Payload> {
+	class PackageReceiver: public IReceiver<std::vector<char>> {
 	public:
-		PackageReceiver(const Header& header, const std::size_t& payload_length_field_size, const std::size_t& max_payload_length);
+		typedef std::vector<char> Payload;
+		PackageReceiver(const PackageDescriptor& package_descriptor);
 		PackageReceiver(const PackageReceiver& other) = delete;
 		PackageReceiver& operator=(const PackageReceiver& other) = delete;
 
@@ -29,19 +29,11 @@ namespace communication {
 		/// @return pointer to data listener. nullptr if not set or if set to nullptr
 		virtual common::IListener<Payload> *data_listener() = 0;
 
+		/// @brief Flushes input buffer and sets the receiver statie to be RECEIVING_HEADER
 		void reset_receiver();
 	private:
-		Header m_header;
-		std::size_t m_payload_length_field_size;
-		std::size_t m_max_payload_length;
-		common::IListener<Payload> *m_data_listener_ptr;
-
-		// Constants
-		enum {
-			MIN_PAYLOAD_LENGTH_FIELD_SIZE = 1,
-			MAX_PAYLOAD_LENGTH_FIELD_SIZE = sizeof(std::size_t),
-			MIN_HEADER_LENGTH = 4
-		};
+		PackageDescriptor m_package_descriptor;
+		common::IListener<Payload> *m_data_listener_ptr;		
 
 		// Receiver state variables
 		enum class ReceiverState: int {
@@ -57,9 +49,6 @@ namespace communication {
 		void receive_header(const char& event);
 		void receive_size(const char& event);
 		void receive_data(const char& event);
-
-		// Utilities
-		static std::size_t deserialize_data_length(const std::vector<char>& data);
 	}; // PackageReceiver
 } // namespace data
 #endif // __PACKAGE_RECEIVER_HPP__

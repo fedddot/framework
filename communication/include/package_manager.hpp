@@ -36,11 +36,11 @@ namespace communication {
 	}; // PackageManager
 
 	inline PackageReceiver& PackageManager::receiver() {
-		return std::ref(m_receiver);
+		return m_receiver;
 	}
 
 	inline PackageSender& PackageManager::sender() {
-		return std::ref(m_sender);
+		return m_sender;
 	}
 
 } // namespace communication

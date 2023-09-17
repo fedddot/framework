@@ -101,3 +101,46 @@ TEST(ut_package_descriptor, PackageDescriptor_unpack_payload_length_sanity) {
 		}
 	);
 }
+
+TEST(ut_package_descriptor, PackageDescriptor_pack_sanity) {
+	// GIVEN
+	const std::vector<char> test_header({'a', 'b', 'c', 'd'});
+	const std::size_t test_payload_length_fiels_size(4UL);
+	PackageDescriptor test_instance(test_header, test_payload_length_fiels_size);
+	const std::vector<std::vector<char>> test_cases(
+		{
+			{'a', 'b', 'c', 'd'},
+			{'a', 'b', 'c', 'd', 'e', 'f'},
+			{}
+		}
+	);
+	
+	std::for_each(test_cases.begin(), test_cases.end(),
+		[&](const std::vector<char>& test_case) {
+			// WHEN
+			std::vector<char> packed_data;
+
+			// THEN
+			ASSERT_NO_THROW(packed_data = test_instance.pack(test_case));
+			
+			// Check header
+			auto iter_start = packed_data.begin();
+			auto iter_end = iter_start + test_header.size();
+			std::vector<char> packed_header(iter_start, iter_end);
+			ASSERT_EQ(test_header, packed_header);
+
+			// Check size
+			iter_start = iter_end;
+			iter_end = iter_start + test_payload_length_fiels_size;
+			std::vector<char> packed_size(iter_start, iter_end);
+			ASSERT_EQ(test_case.size(), test_instance.unpack_payload_length(packed_size));
+
+			// Check payload
+			iter_start = iter_end;
+			iter_end = iter_start + test_case.size();
+			std::vector<char> packed_payload(iter_start, iter_end);
+			ASSERT_EQ(packed_data.end(), iter_end);
+			ASSERT_EQ(test_case, packed_payload);
+		}
+	);
+}

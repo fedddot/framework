@@ -1,28 +1,31 @@
-#ifndef	__RAW_DATA_SENDER_HPP__
-#define	__RAW_DATA_SENDER_HPP__
+#ifndef	__PACKAGE_SENDER_HPP__
+#define	__PACKAGE_SENDER_HPP__
 
 #include <vector>
 #include <cstddef>
-#include <memory>
 
 #include "isender.hpp"
-#include "idata.hpp"
-#include "iserializer.hpp"
+#include "package_descriptor.hpp"
 
 namespace communication {
-	class ByteSender: public ISender<data::IData> {
+	/// @brief Responsible to pack unpacked data and send it through underlying protocol
+	class PackageSender: public ISender<std::vector<char>> {
 	public:
-		typedef std::shared_ptr<data::ISerializer<data::IData, std::vector<char>>> SerializerSmartPtr;
-		ByteSender(const std::vector<char>& header, const std::size_t& length_field_size, const SerializerSmartPtr& serializer_ptr);
-		std::vector<char> prepare_data(const data::IData& data) const;
-	private:
-		const std::vector<char> m_header;
-		const std::size_t m_length_field_size;
-		SerializerSmartPtr m_serializer_ptr;
+		typedef std::vector<char> Payload;
+
+		/// @brief Ctor, creates a new instance of class. The layout of sending messages is configured and maintained by received PackageDescriptor instance
+		/// @param package_descriptor a const reference to PackageDescriptor instance describing the layout of sending data
+		/// @param packed_data_sender a reference to ISender<std::vector<char>> instance implementing underlying sending protocol
+		PackageSender(const PackageDescriptor& package_descriptor, ISender<std::vector<char>>& packed_data_sender);
+		PackageSender(const PackageSender& other) = delete;
+		PackageSender& operator=(const PackageSender& other) = delete;
 		
-		static std::size_t init_length_field_size(const std::size_t& length_field_size);
-		static SerializerSmartPtr init_serializer(const SerializerSmartPtr& serializer_ptr);
-		std::vector<char> serialize_data_size(const std::size_t& data_size) const;
-	}; // ByteSender
+		/// @brief Packs recieved data and sends it through the underlying sending protocol
+		/// @param data unpacked data
+		virtual void send(const Payload& data) override;
+	private:
+		PackageDescriptor m_package_descriptor;
+		ISender<std::vector<char>>& m_packed_data_sender;
+	}; // PackageSender
 } // namespace communication
-#endif // __RAW_DATA_SENDER_HPP__
+#endif // __PACKAGE_SENDER_HPP__

@@ -4,9 +4,9 @@
 #include <algorithm>
 
 #include "isender.hpp"
-#include "idata.hpp"
-#include "iserializer.hpp"
-#include "byte_sender.hpp"
+#include "package_types.hpp"
+
+#include "package_sender.hpp"
 
 using namespace communication;
 using namespace data;

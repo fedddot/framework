@@ -1,19 +1,25 @@
-add_library(isender INTERFACE)
-target_include_directories(isender INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
-
+# Basic interfaces
 add_library(ireceiver INTERFACE)
 target_include_directories(ireceiver INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
 target_link_libraries(ireceiver INTERFACE ilistener)
 
-add_library(byte_sender INTERFACE)
-target_sources(byte_sender INTERFACE ${CMAKE_CURRENT_LIST_DIR}/src/byte_sender.cpp)
-target_include_directories(byte_sender INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
-target_link_libraries(byte_sender INTERFACE isender iserializer idata)
+add_library(isender INTERFACE)
+target_include_directories(isender INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
 
-add_library(byte_receiver INTERFACE)
-target_sources(byte_receiver INTERFACE ${CMAKE_CURRENT_LIST_DIR}/src/byte_receiver.cpp)
-target_include_directories(byte_receiver INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
-target_link_libraries(byte_receiver INTERFACE ireceiver iparser idata)
 
-add_library(byte_sender_test STATIC)
-target_link_libraries(byte_sender_test PRIVATE byte_sender)
+# Packaged data handling
+add_library(package_descriptor INTERFACE)
+target_sources(package_descriptor INTERFACE ${CMAKE_CURRENT_LIST_DIR}/src/package_descriptor.cpp)
+target_include_directories(package_descriptor INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
+
+add_library(package_receiver INTERFACE)
+target_sources(package_receiver INTERFACE ${CMAKE_CURRENT_LIST_DIR}/src/package_receiver.cpp)
+target_include_directories(package_receiver INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
+target_link_libraries(package_receiver INTERFACE ireceiver ilistener package_descriptor)
+
+add_library(package_sender INTERFACE)
+target_sources(package_sender INTERFACE ${CMAKE_CURRENT_LIST_DIR}/src/package_sender.cpp)
+target_include_directories(package_sender INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
+target_link_libraries(package_sender INTERFACE isender package_descriptor)
+
+add_subdirectory(tests EXCLUDE_FROM_ALL)

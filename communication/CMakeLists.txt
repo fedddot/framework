@@ -21,3 +21,5 @@ add_library(package_sender INTERFACE)
 target_sources(package_sender INTERFACE ${CMAKE_CURRENT_LIST_DIR}/src/package_sender.cpp)
 target_include_directories(package_sender INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
 target_link_libraries(package_sender INTERFACE isender package_descriptor)
+
+add_subdirectory(tests EXCLUDE_FROM_ALL)

@@ -51,9 +51,9 @@ std::size_t PackageDescriptor::unpack_payload_length(const PackageData& packed_p
 	std::for_each(
 		packed_payload_length.begin(),
 		packed_payload_length.end(),
-		[&](const auto& length_ch) {
+		[&](const char& length_ch) {
 			data_length <<= BITS_IN_BYTE;
-			data_length |= static_cast<std::size_t>(length_ch);
+			data_length |= *((const unsigned char *)(&length_ch));
 		}
 	);
 	return data_length;

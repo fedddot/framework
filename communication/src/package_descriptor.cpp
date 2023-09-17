@@ -58,7 +58,3 @@ std::size_t PackageDescriptor::unpack_payload_length(const PackageData& packed_p
 	);
 	return data_length;
 }
-
-bool PackageDescriptor::match_header(const Header& header) const {
-	return m_header == header;
-}

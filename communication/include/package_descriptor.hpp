@@ -38,7 +38,10 @@ namespace communication {
 		/// @brief Compares received header with one the instance was initialized with
 		/// @param header header to match
 		/// @return true if the header matches, false otherwise
-		bool match_header(const Header& header) const;
+		inline bool match_header(const Header& header) const;
+
+		inline Header header() const;
+		inline std::size_t payload_length_field_size() const;
 	private:
 		// Constants
 		enum {
@@ -53,5 +56,17 @@ namespace communication {
 		Header m_header;
 		std::size_t m_payload_length_field_size;
 	}; // PackageDescriptor
+
+	inline bool PackageDescriptor::match_header(const Header& header) const {
+		return m_header == header;
+	}
+
+	inline PackageDescriptor::Header PackageDescriptor::header() const {
+		return m_header;
+	}
+
+	inline std::size_t PackageDescriptor::payload_length_field_size() const {
+		return m_payload_length_field_size;
+	}
 } // namespace communication
 #endif // __PACKAGE_DESCRIPTOR_HPP__

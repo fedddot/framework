@@ -5,6 +5,10 @@ add_library(ireceiver INTERFACE)
 target_include_directories(ireceiver INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
 target_link_libraries(ireceiver INTERFACE ilistener)
 
+add_library(icommunication_manager INTERFACE)
+target_include_directories(icommunication_manager INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
+target_link_libraries(icommunication_manager INTERFACE ilistener)
+
 add_library(byte_sender INTERFACE)
 target_sources(byte_sender INTERFACE ${CMAKE_CURRENT_LIST_DIR}/src/byte_sender.cpp)
 target_include_directories(byte_sender INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)

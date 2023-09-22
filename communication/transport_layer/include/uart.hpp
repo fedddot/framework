@@ -21,12 +21,18 @@ namespace communication {
 		};
 
 		enum class StopBits: int {
-			NONE,
 			ONE,
 			TWO
 		};
 
-		Uart(BaudRate baud_rate, Parity parity, StopBits stop_bits);
+		enum class BitsNumber: int {
+			BN5,
+			BN6,
+			BN7,
+			BN8
+		};
+
+		Uart(BaudRate baud_rate = BaudRate::B115200, Parity parity = Parity::NONE, StopBits stop_bits = StopBits::ONE, BitsNumber bits_number = BitsNumber::BN8);
 
 		Uart(const Uart& other) = delete;
 		Uart& operator=(const Uart& other) = delete;
@@ -36,10 +42,12 @@ namespace communication {
 		inline BaudRate baud_rate() const;
 		inline Parity parity() const;
 		inline StopBits stop_bits() const;
+		inline BitsNumber bits_number() const;
 	private:
 		BaudRate m_baud_rate;
 		Parity m_parity;
 		StopBits m_stop_bits;
+		BitsNumber m_bits_number;
 
 		common::IListener<char> *m_char_listener_ptr;
 	}; // Uart
@@ -62,6 +70,10 @@ namespace communication {
 
 	inline Uart::StopBits Uart::stop_bits() const {
 		return m_stop_bits;
+	}
+
+	inline Uart::BitsNumber Uart::bits_number() const {
+		return m_bits_number;
 	}
 } // namespace communication
 #endif // __UART_HPP__

@@ -10,8 +10,8 @@ namespace communication {
 	class Uart: public ISender<std::vector<char>> {
 	public:
 		enum class BaudRate: int {
-			B9600,
-			B115200
+			BR9600,
+			BR115200
 		};
 
 		enum class Parity: int {
@@ -32,7 +32,7 @@ namespace communication {
 			BN8
 		};
 
-		Uart(BaudRate baud_rate = BaudRate::B115200, Parity parity = Parity::NONE, StopBits stop_bits = StopBits::ONE, BitsNumber bits_number = BitsNumber::BN8);
+		Uart(BaudRate baud_rate = BaudRate::BR115200, Parity parity = Parity::NONE, StopBits stop_bits = StopBits::ONE, BitsNumber bits_number = BitsNumber::BN8);
 
 		Uart(const Uart& other) = delete;
 		Uart& operator=(const Uart& other) = delete;

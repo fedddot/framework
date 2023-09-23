@@ -6,7 +6,7 @@ namespace common {
 	class IListener {
 	public:
 		virtual ~IListener() noexcept = 0;
-		virtual void onEvent(const Event& event) = 0;
+		virtual void on_event(const Event& event) = 0;
 	}; // IListener
 
 	template <class Event>

@@ -24,9 +24,9 @@ namespace communication {
 
 		/// @brief New character received callback. Should be invoked by the underlying layer each time a new character received. Responsible for proper storing, processing the incomming data, and dispatching the composed data to the listener
 		/// @param event new character received
-		virtual void onEvent(const char& event) override;
+		virtual void on_event(const char& event) override;
 
-		/// @brief Sets data listener. When a new data received, IReceiver instance dispatches it to the listener by calling to its onEvent method with corresponding data
+		/// @brief Sets data listener. When a new data received, IReceiver instance dispatches it to the listener by calling to its on_event method with corresponding data
 		/// @param data_listener_ptr a valid pointer to the data listener instance
 		/// @exception std::invalid_argument if invalid listener pointer received
 		virtual void set_data_listener(common::IListener<Payload> *data_listener_ptr) override;

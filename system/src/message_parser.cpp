@@ -22,7 +22,7 @@ void MessageParser::setMessageListener(common::IListener<const std::vector<char>
 	m_message_listener_ptr = message_listener_ptr;
 }
 
-void MessageParser::onEvent(char event) {
+void MessageParser::on_event(char event) {
 	switch (m_state) {
 	case MATCHING_SIGNATURE:
 		handleMatchingSignature(event);
@@ -72,7 +72,7 @@ void MessageParser::handleReadingMsgData(const char& event) {
 		return;
 	}
 	if (nullptr != m_message_listener_ptr) {
-		m_message_listener_ptr->onEvent(m_reading_buff);
+		m_message_listener_ptr->on_event(m_reading_buff);
 	}
 	resetParserState();
 }

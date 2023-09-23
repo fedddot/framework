@@ -16,7 +16,7 @@ PackageReceiver::PackageReceiver(const PackageDescriptor& package_descriptor): m
 	reset_receiver();
 }
 
-void PackageReceiver::onEvent(const char& event) {
+void PackageReceiver::on_event(const char& event) {
 	switch (m_state) {
 	case ReceiverState::RECEIVING_HEADER:
 		receive_header(event);
@@ -28,7 +28,7 @@ void PackageReceiver::onEvent(const char& event) {
 		receive_data(event);
 		break;
 	default:
-		throw std::runtime_error("PackageReceiver::onEvent: unsupported ReceiverState");
+		throw std::runtime_error("PackageReceiver::on_event: unsupported ReceiverState");
 	}
 }
 
@@ -75,7 +75,7 @@ void PackageReceiver::receive_data(const char& event) {
 	std::vector<char> data(m_data_buff);
 	reset_receiver();
 	if (m_data_listener_ptr) {
-		m_data_listener_ptr->onEvent(data);
+		m_data_listener_ptr->on_event(data);
 	}
 }
 

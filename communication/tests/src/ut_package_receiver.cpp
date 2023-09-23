@@ -20,7 +20,7 @@ using namespace common;
 class TestListener: public IListener<std::vector<char>> {
 public:
 	TestListener(const std::vector<char>& payload_data, bool *test_listener_invoked_ptr);
-	virtual inline void onEvent(const std::vector<char>& event) override;
+	virtual inline void on_event(const std::vector<char>& event) override;
 private:
 	std::vector<char> m_payload_data;
 	bool *m_test_listener_invoked_ptr;
@@ -30,7 +30,7 @@ TestListener::TestListener(const std::vector<char>& payload_data, bool *test_lis
 	*m_test_listener_invoked_ptr = false;
 }
 
-inline void TestListener::onEvent(const std::vector<char>& event) {
+inline void TestListener::on_event(const std::vector<char>& event) {
 	ASSERT_EQ(m_payload_data, event);
 	*m_test_listener_invoked_ptr = true;
 }
@@ -67,7 +67,7 @@ inline PackageDescriptor& ut_package_receiver::package_descriptor() {
 	return std::ref(m_package_descriptor);
 }
 
-TEST_F(ut_package_receiver, PackageReceiver_onEvent_sanity) {
+TEST_F(ut_package_receiver, PackageReceiver_on_event_sanity) {
 	// GIVEN
 	const std::vector<std::vector<char>> test_cases(
 		{
@@ -87,7 +87,7 @@ TEST_F(ut_package_receiver, PackageReceiver_onEvent_sanity) {
 			// THEN
 			std::for_each(packed_test_cases.begin(), packed_test_cases.end(),
 				[&](const char& ch) {
-					ASSERT_NO_THROW(test_instance().onEvent(ch));
+					ASSERT_NO_THROW(test_instance().on_event(ch));
 				}
 			);
 

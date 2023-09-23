@@ -25,16 +25,16 @@ TEST(SanityTests, MessageParserOnEvent) {
 
 	MessageParser parser(signature, size.size());
 	parser.setMessageListener(&listener);
-	parser.onEvent('a');
-	parser.onEvent('a');
-	parser.onEvent('a');
+	parser.on_event('a');
+	parser.on_event('a');
+	parser.on_event('a');
 	for (auto it = signature.begin(); it != signature.end(); ++it) {
-		parser.onEvent(*it);
+		parser.on_event(*it);
 	}
 	for (auto it = size.begin(); it != size.end(); ++it) {
-		parser.onEvent(*it);
+		parser.on_event(*it);
 	}
 	for (auto it = message.begin(); it != message.end(); ++it) {
-		parser.onEvent(*it);
+		parser.on_event(*it);
 	}
 }

@@ -11,7 +11,7 @@ namespace cnc_system {
 		MessageParser(const std::vector<char>& start_signature, const std::size_t& length_field_size);
 		MessageParser(const MessageParser& other) = delete;
 		MessageParser& operator=(const MessageParser& other) = delete;
-		virtual void onEvent(char event) override;
+		virtual void on_event(char event) override;
 		void setMessageListener(common::IListener<const std::vector<char>&> *message_listener_ptr);
 		inline const std::vector<char> getStartSignature() const;
 		inline std::size_t getLengthFieldSize() const;

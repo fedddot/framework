@@ -4,7 +4,7 @@
 #include <cstddef>
 
 #include "ilistener.hpp"
-#include "ireceiver.hpp"
+#include "dispatcher.hpp"
 #include "package_descriptor.hpp"
 
 #include "package_receiver.hpp"
@@ -12,11 +12,16 @@
 using namespace communication;
 using namespace common;
 
-PackageReceiver::PackageReceiver(const PackageDescriptor& package_descriptor): m_package_descriptor(package_descriptor), m_data_listener_ptr(nullptr) {
+PackageReceiver::PackageReceiver(const PackageDescriptor& package_descriptor, common::Dispatcher<char>& char_dispatcher): m_package_descriptor(package_descriptor), m_char_dispatcher(char_dispatcher) {
 	reset_receiver();
+	m_char_dispatcher.subscribe(this);
 }
 
-void PackageReceiver::onEvent(const char& event) {
+PackageReceiver::~PackageReceiver() noexcept {
+	m_char_dispatcher.unsubscribe(this);
+}
+
+void PackageReceiver::on_event(const char& event) {
 	switch (m_state) {
 	case ReceiverState::RECEIVING_HEADER:
 		receive_header(event);
@@ -28,16 +33,8 @@ void PackageReceiver::onEvent(const char& event) {
 		receive_data(event);
 		break;
 	default:
-		throw std::runtime_error("PackageReceiver::onEvent: unsupported ReceiverState");
+		throw std::runtime_error("PackageReceiver::on_event: unsupported ReceiverState");
 	}
-}
-
-void PackageReceiver::set_data_listener(common::IListener<Payload> *data_listener_ptr) {
-	m_data_listener_ptr = data_listener_ptr;
-}
-
-common::IListener<PackageReceiver::Payload> *PackageReceiver::data_listener() {
-	return m_data_listener_ptr;
 }
 
 void PackageReceiver::receive_header(const char& event) {
@@ -74,9 +71,7 @@ void PackageReceiver::receive_data(const char& event) {
 	}
 	std::vector<char> data(m_data_buff);
 	reset_receiver();
-	if (m_data_listener_ptr) {
-		m_data_listener_ptr->onEvent(data);
-	}
+	dispatch(data);
 }
 
 void PackageReceiver::reset_receiver() {

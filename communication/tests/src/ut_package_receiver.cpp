@@ -20,7 +20,7 @@ using namespace common;
 class TestListener: public IListener<std::vector<char>> {
 public:
 	TestListener(const std::vector<char>& payload_data, bool *test_listener_invoked_ptr);
-	virtual inline void onEvent(const std::vector<char>& event) override;
+	virtual inline void on_event(const std::vector<char>& event) override;
 private:
 	std::vector<char> m_payload_data;
 	bool *m_test_listener_invoked_ptr;
@@ -30,7 +30,7 @@ TestListener::TestListener(const std::vector<char>& payload_data, bool *test_lis
 	*m_test_listener_invoked_ptr = false;
 }
 
-inline void TestListener::onEvent(const std::vector<char>& event) {
+inline void TestListener::on_event(const std::vector<char>& event) {
 	ASSERT_EQ(m_payload_data, event);
 	*m_test_listener_invoked_ptr = true;
 }
@@ -42,9 +42,11 @@ public:
 	virtual inline void TearDown() override;
 	inline PackageReceiver& test_instance();
 	inline PackageDescriptor& package_descriptor();
+	inline Dispatcher<char>& char_dispatcher();
 private:
 	PackageDescriptor m_package_descriptor;
 	std::shared_ptr<PackageReceiver> m_test_instance;
+	Dispatcher<char> m_char_dispatcher;
 };
 
 ut_package_receiver::ut_package_receiver(): m_package_descriptor({'a', 'b', 'c', 'd'}, 4UL), m_test_instance(nullptr) {
@@ -52,7 +54,7 @@ ut_package_receiver::ut_package_receiver(): m_package_descriptor({'a', 'b', 'c',
 }
 
 inline void ut_package_receiver::SetUp() {
-	m_test_instance = std::shared_ptr<PackageReceiver>(new PackageReceiver(m_package_descriptor));
+	m_test_instance = std::shared_ptr<PackageReceiver>(new PackageReceiver(m_package_descriptor, m_char_dispatcher));
 }
 
 inline void ut_package_receiver::TearDown() {
@@ -67,7 +69,11 @@ inline PackageDescriptor& ut_package_receiver::package_descriptor() {
 	return std::ref(m_package_descriptor);
 }
 
-TEST_F(ut_package_receiver, PackageReceiver_onEvent_sanity) {
+inline Dispatcher<char>& ut_package_receiver::char_dispatcher() {
+	return std::ref(m_char_dispatcher);
+}
+
+TEST_F(ut_package_receiver, PackageReceiver_on_event_sanity) {
 	// GIVEN
 	const std::vector<std::vector<char>> test_cases(
 		{
@@ -81,17 +87,17 @@ TEST_F(ut_package_receiver, PackageReceiver_onEvent_sanity) {
 			// WHEN
 			bool test_listener_invoked = false;
 			TestListener test_listener(test_case, &test_listener_invoked);
-			test_instance().set_data_listener(&test_listener);
+			test_instance().subscribe(&test_listener);
 			const std::vector<char> packed_test_cases = package_descriptor().pack(test_case);
 
 			// THEN
 			std::for_each(packed_test_cases.begin(), packed_test_cases.end(),
 				[&](const char& ch) {
-					ASSERT_NO_THROW(test_instance().onEvent(ch));
+					ASSERT_NO_THROW(char_dispatcher().dispatch(ch));
 				}
 			);
-
 			ASSERT_TRUE(test_listener_invoked);
+			test_instance().unsubscribe(&test_listener);
 		}
 	);
 }

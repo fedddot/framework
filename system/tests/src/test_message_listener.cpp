@@ -8,6 +8,6 @@
 
 using namespace testing;
 
-void TestMessageListener::onEvent(const std::vector<char>& event) {
+void TestMessageListener::on_event(const std::vector<char>& event) {
 	std::cout << json::vectorToString(event) << std::endl;
 }

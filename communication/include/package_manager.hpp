@@ -5,6 +5,7 @@
 #include <cstddef>
 
 #include "isender.hpp"
+#include "dispatcher.hpp"
 #include "package_descriptor.hpp"
 #include "package_receiver.hpp"
 #include "package_sender.hpp"
@@ -16,7 +17,8 @@ namespace communication {
 		/// @brief Ctor, creates a new instance of class. Creates receiver and sender instances.
 		/// @param package_descriptor a const reference to PackageDescriptor instance describing the layout of receiving/sending data
 		/// @param packed_data_sender a reference to ISender<std::vector<char>> instance implementing underlying sending protocol
-		PackageManager(const PackageDescriptor& package_descriptor, ISender<std::vector<char>>& packed_data_sender);
+		/// @param char_dispatcher a reference to common::Dispatcher<char> instance responsible for dispatchment of bytes received from the underlying data protocol
+		PackageManager(const PackageDescriptor& package_descriptor, ISender<std::vector<char>>& packed_data_sender, common::Dispatcher<char>& char_dispatcher);
 
 		PackageManager(const PackageManager& other) = delete;
 		PackageManager& operator=(const PackageManager& other) = delete;

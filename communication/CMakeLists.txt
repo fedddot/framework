@@ -15,7 +15,7 @@ target_include_directories(package_descriptor INTERFACE ${CMAKE_CURRENT_LIST_DIR
 add_library(package_receiver INTERFACE)
 target_sources(package_receiver INTERFACE ${CMAKE_CURRENT_LIST_DIR}/src/package_receiver.cpp)
 target_include_directories(package_receiver INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
-target_link_libraries(package_receiver INTERFACE ireceiver ilistener package_descriptor)
+target_link_libraries(package_receiver INTERFACE ilistener dispatcher package_descriptor)
 
 add_library(package_sender INTERFACE)
 target_sources(package_sender INTERFACE ${CMAKE_CURRENT_LIST_DIR}/src/package_sender.cpp)

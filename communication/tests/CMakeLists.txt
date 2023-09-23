@@ -10,6 +10,7 @@ target_link_libraries(
 	PRIVATE
 	package_descriptor
 	package_receiver
+	dispatcher
 	
 	gtest
 	gmock

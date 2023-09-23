@@ -42,9 +42,11 @@ public:
 	virtual inline void TearDown() override;
 	inline PackageReceiver& test_instance();
 	inline PackageDescriptor& package_descriptor();
+	inline Dispatcher<char>& char_dispatcher();
 private:
 	PackageDescriptor m_package_descriptor;
 	std::shared_ptr<PackageReceiver> m_test_instance;
+	Dispatcher<char> m_char_dispatcher;
 };
 
 ut_package_receiver::ut_package_receiver(): m_package_descriptor({'a', 'b', 'c', 'd'}, 4UL), m_test_instance(nullptr) {
@@ -52,7 +54,7 @@ ut_package_receiver::ut_package_receiver(): m_package_descriptor({'a', 'b', 'c',
 }
 
 inline void ut_package_receiver::SetUp() {
-	m_test_instance = std::shared_ptr<PackageReceiver>(new PackageReceiver(m_package_descriptor));
+	m_test_instance = std::shared_ptr<PackageReceiver>(new PackageReceiver(m_package_descriptor, m_char_dispatcher));
 }
 
 inline void ut_package_receiver::TearDown() {
@@ -65,6 +67,10 @@ inline PackageReceiver& ut_package_receiver::test_instance() {
 
 inline PackageDescriptor& ut_package_receiver::package_descriptor() {
 	return std::ref(m_package_descriptor);
+}
+
+inline Dispatcher<char>& ut_package_receiver::char_dispatcher() {
+	return std::ref(m_char_dispatcher);
 }
 
 TEST_F(ut_package_receiver, PackageReceiver_on_event_sanity) {
@@ -81,17 +87,17 @@ TEST_F(ut_package_receiver, PackageReceiver_on_event_sanity) {
 			// WHEN
 			bool test_listener_invoked = false;
 			TestListener test_listener(test_case, &test_listener_invoked);
-			test_instance().set_data_listener(&test_listener);
+			test_instance().subscribe(&test_listener);
 			const std::vector<char> packed_test_cases = package_descriptor().pack(test_case);
 
 			// THEN
 			std::for_each(packed_test_cases.begin(), packed_test_cases.end(),
 				[&](const char& ch) {
-					ASSERT_NO_THROW(test_instance().on_event(ch));
+					ASSERT_NO_THROW(char_dispatcher().dispatch(ch));
 				}
 			);
-
 			ASSERT_TRUE(test_listener_invoked);
+			test_instance().unsubscribe(&test_listener);
 		}
 	);
 }

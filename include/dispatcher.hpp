@@ -58,6 +58,13 @@ namespace common {
 			}
 		);
 	}
+
+	template <class Event>
+	inline void Dispatcher<Event>::throw_if_null(IListener<Event> *listener_ptr) {
+		if (nullptr == listener_ptr) {
+			throw std::invalid_argument("invalid event listener ptr received");
+		}
+	}
 }
 
 #endif // __DISPATCHER_HPP__

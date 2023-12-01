@@ -2,68 +2,60 @@
 #define	__STATE_MACHINE_HPP__
 
 #include <stdexcept>
-#include <string>
 #include <functional>
-#include <vector>
-
-#include "state_machine_state.hpp"
-#include "state_machine_event.hpp"
+#include <string>
+#include <map>
 
 namespace state_machine {
-	template <class Tstate_id, class Tcontext, class Tevent_id, class Tevent_data>
+	template <class Tstate_id, class Tcontext, class Tevent>
 	class StateMachine {
 	public:
-		typedef EventBase<Tevent_id, Tevent_data> Event;
-		typedef StateBase<Tstate_id, Tcontext, Event> State;
-		typedef std::vector<State> States;
+		typedef std::function<Tstate_id(Tcontext *context, const Tstate_id& calling_state, const Tevent& event)> StateHandler;
+		typedef std::map<Tstate_id, StateHandler> States;
 
-		StateMachine(const std::string& name, const Tcontext& initial_context, const States& states, const Tstate_id& init_state_id);
+		StateMachine(const std::string& name, const States& states, const Tstate_id& initial_state);
+		StateMachine(const StateMachine& other) = default;
+		StateMachine& operator=(const StateMachine& other) = default;
+		virtual ~StateMachine() noexcept = default;
 
-		inline void step(const Event& event);
-		inline Tstate_id curr_state() const;
+		inline void step(const Tevent& event);
+		inline Tstate_id state() const;
 		inline std::string name() const;
 	private:
-		typedef typename States::const_iterator StatesIterator;
+		typedef typename States::iterator StatesIterator;
 		std::string m_name;
 		Tcontext m_context;
 		States m_states;
-		StatesIterator m_curr_state;
-		static inline StatesIterator find_state(const States& states, const Tstate_id& id);
+		StatesIterator m_state;
 	}; // StateMachine
 
-	template <class Tstate_id, class Tcontext, class Tevent_id, class Tevent_data>
-	StateMachine<Tstate_id, Tcontext, Tevent_id, Tevent_data>::StateMachine(const std::string& name, const Tcontext& initial_context, const States& states, const Tstate_id& init_state_id): m_name(name), m_context(initial_context), m_states(states), m_curr_state(find_state(m_states, init_state_id)) {
-
-	}
-
-	template <class Tstate_id, class Tcontext, class Tevent_id, class Tevent_data>
-	inline void StateMachine<Tstate_id, Tcontext, Tevent_id, Tevent_data>::step(const Event& event) {
-		auto next_state_id = m_curr_state->trans_function()(&m_context, m_curr_state->id(), event);
-		auto next_state_iter = find_state(m_states, next_state_id);
-		m_curr_state = next_state_iter;
-	}
-
-	template <class Tstate_id, class Tcontext, class Tevent_id, class Tevent_data>
-	inline Tstate_id StateMachine<Tstate_id, Tcontext, Tevent_id, Tevent_data>::curr_state() const {
-		return m_curr_state->id();
-	}
-
-	template <class Tstate_id, class Tcontext, class Tevent_id, class Tevent_data>
-	inline std::string StateMachine<Tstate_id, Tcontext, Tevent_id, Tevent_data>::name() const {
-		return m_name;
-	}
-
-	template <class Tstate_id, class Tcontext, class Tevent_id, class Tevent_data>
-	inline typename StateMachine<Tstate_id, Tcontext, Tevent_id, Tevent_data>::StatesIterator StateMachine<Tstate_id, Tcontext, Tevent_id, Tevent_data>::find_state(const States& states, const Tstate_id& id) {
-		StatesIterator iter(states.begin());
-		StatesIterator iter_end(states.end());
-		while (iter_end != iter) {
-			if (id == iter->id()) {
-				return iter;
-			}
-			++iter;
+	template <class Tstate_id, class Tcontext, class Tevent>
+	StateMachine<Tstate_id, Tcontext, Tevent>::StateMachine(const std::string& name, const States& states, const Tstate_id& initial_state): m_name(name), m_context(), m_states(states), m_state(m_states.end()) {
+		auto iter = m_states.find(initial_state);
+		if (m_states.end() == iter) {
+			throw std::invalid_argument("invalid states received");
 		}
-		throw std::invalid_argument("state with specified ID not found");
+		m_state = iter;
+	}
+
+	template <class Tstate_id, class Tcontext, class Tevent>
+	inline void StateMachine<Tstate_id, Tcontext, Tevent>::step(const Tevent& event) {
+		auto next_state_id = (m_state->second)(&m_context, m_state->first, event);
+		auto next_state_iter = m_states.find(next_state_id);
+		if (m_states.end() == next_state_iter) {
+			throw std::runtime_error("invalid state returned by state handler");
+		}
+		m_state = next_state_iter;
+	}
+
+	template <class Tstate_id, class Tcontext, class Tevent>
+	inline Tstate_id StateMachine<Tstate_id, Tcontext, Tevent>::state() const {
+		return m_state->first;
+	}
+
+	template <class Tstate_id, class Tcontext, class Tevent>
+	inline std::string StateMachine<Tstate_id, Tcontext, Tevent>::name() const {
+		return m_name;
 	}
 
 } // namespace state_machine

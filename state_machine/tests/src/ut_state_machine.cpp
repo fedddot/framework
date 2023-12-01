@@ -116,6 +116,33 @@ TEST(ut_state_machine, Ctor_Dtor_getters_sanity) {
 	instance_ptr = nullptr;
 }
 
+TEST(ut_state_machine, Ctor_invalid_states_empty_negative) {
+	// GIVEN:
+	const std::string test_sm_name("test_sm");
+	const State initial_state(State::IDLE);
+	
+	// WHEN:
+	TestStateMachine *instance_ptr(nullptr);
+	// THEN:
+	ASSERT_THROW(instance_ptr = new TestStateMachine(test_sm_name, TestStateMachine::States(), initial_state), std::invalid_argument);
+	ASSERT_EQ(nullptr, instance_ptr);
+}
+
+TEST(ut_state_machine, Ctor_invalid_states_initial_state_is_not_in_states_negative) {
+	// GIVEN:
+	const std::string test_sm_name("test_sm");
+	const State initial_state(State::IDLE);
+	TestStateMachine::States invalid_states(test_states);
+	
+	// WHEN:
+	TestStateMachine *instance_ptr(nullptr);
+	invalid_states.erase(invalid_states.find(initial_state));
+
+	// THEN:
+	ASSERT_THROW(instance_ptr = new TestStateMachine(test_sm_name, invalid_states, initial_state), std::invalid_argument);
+	ASSERT_EQ(nullptr, instance_ptr);
+}
+
 TEST(ut_state_machine, step_sanity) {
 	// GIVEN:
 	const std::string test_sm_name("test_sm");
@@ -171,4 +198,20 @@ TEST(ut_state_machine, step_sanity) {
 			ASSERT_EQ(test_case.expected_state, instance.state());
 		}
 	);
+}
+
+TEST(ut_state_machine, step_negative_handler_returned_non_existing_state) {
+	// GIVEN:
+	const std::string test_sm_name("test_sm");
+	const State initial_state(State::IDLE);
+	const State deleted_state(State::WAIT_END_EVENT);
+	TestStateMachine::States states(test_states);
+	
+	// WHEN:
+	states.erase(states.find(deleted_state));
+	TestStateMachine instance(test_sm_name, states, initial_state);
+
+	// THEN:
+	ASSERT_NO_THROW(instance.step(Event::START_EVENT));
+	ASSERT_THROW(instance.step(Event::PROCESS_EVENT), std::runtime_error);
 }

@@ -2,27 +2,29 @@
 #define	__STATE_MACHINE_STATE_HPP__
 
 #include <functional>
+#include "state_machine_context.hpp"
 
 namespace state_machine {
-	template <class Tstate_id, class Tcontext, class Tevent>
+	template <class Tstate_id, class Tcontext_data, class Tevent>
 	class StateBase {
 	public:
-		typedef std::function<Tstate_id(Tcontext *, const Tstate_id& current_state, const Tevent&)> TransitionFunction;
+		typedef StateMachineContext<Tstate_id, Tcontext_data> Context;
+		typedef std::function<void(Context *, const Tevent&)> StateHandler;
 
-		StateBase(const Tstate_id& id, const TransitionFunction& trans_function);
+		StateBase(const Tstate_id& id, const StateHandler& state_handler);
 		StateBase(const StateBase& other) = default;
 		StateBase& operator=(const StateBase& other) = default;
 		virtual ~StateBase() noexcept = default;
 
 		inline Tstate_id id() const;
-		inline TransitionFunction trans_function() const;
+		inline void handle_event(Context *context_ptr, const Tevent& event) const;
 	private:
 		Tstate_id m_id;
-		TransitionFunction m_trans_function;
+		StateHandler m_handler;
 	};
 
 	template <class Tstate_id, class Tcontext, class Tevent>
-	StateBase<Tstate_id, Tcontext, Tevent>::StateBase(const Tstate_id& id, const TransitionFunction& trans_function): m_id(id), m_trans_function(trans_function) {
+	StateBase<Tstate_id, Tcontext, Tevent>::StateBase(const Tstate_id& id, const StateHandler& state_handler): m_id(id), m_handler(state_handler) {
 
 	}
 
@@ -32,8 +34,8 @@ namespace state_machine {
 	}
 
 	template <class Tstate_id, class Tcontext, class Tevent>
-	inline typename StateBase<Tstate_id, Tcontext, Tevent>::TransitionFunction StateBase<Tstate_id, Tcontext, Tevent>::trans_function() const {
-		return m_trans_function;
+	inline void StateBase<Tstate_id, Tcontext, Tevent>::handle_event(Context *context_ptr, const Tevent& event) const {
+		m_handler(context_ptr, event);
 	}
 
 } // namespace state_machine

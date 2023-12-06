@@ -2,6 +2,9 @@ add_library(idata INTERFACE)
 target_sources(idata INTERFACE ${CMAKE_CURRENT_LIST_DIR}/src/idata.cpp)
 target_include_directories(idata INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
 
+add_library(raw_data INTERFACE)
+target_include_directories(raw_data INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
+
 add_library(composite INTERFACE)
 target_include_directories(composite INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
 

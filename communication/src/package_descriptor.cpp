@@ -7,54 +7,45 @@
 
 using namespace communication;
 
-PackageDescriptor::PackageDescriptor(const Header& header, const std::size_t& payload_length_field_size): m_header(header), m_payload_length_field_size(payload_length_field_size) {
-	if (MIN_HEADER_LENGTH > m_header.size()) {
-		throw std::invalid_argument("received header is too short");
-	}
-	if ((MIN_PAYLOAD_LENGTH_FIELD_SIZE > m_payload_length_field_size) || (MAX_PAYLOAD_LENGTH_FIELD_SIZE < m_payload_length_field_size)) {
-		throw std::invalid_argument("wrong payload_length_field_size received");
-	}
+PackageDescriptor::PackageDescriptor(const Data& signature): m_signature(signature) {
 }
 
-PackageDescriptor::PackageData PackageDescriptor::pack(const Payload& payload) const {
-	PackageData packed_data;
-	auto append_vector_with_other = [](std::vector<char> *one, const std::vector<char>& other) {
-		std::for_each(other.begin(), other.end(),
-			[&](const auto& ch) {
-				one->push_back(ch);
-			}
-		);
-	};
+bool PackageDescriptor::validate(const Data& desc_data) const {
+	if (desc_data.size() != desc_size()) {
+		return false;
+	}
+	const Data signature(desc_data.begin(), desc_data.begin() + m_signature.size());
+	return signature == m_signature;
+}
 
-	append_vector_with_other(&packed_data, m_header);
-	append_vector_with_other(&packed_data, pack_payload_length(payload.size()));
-	append_vector_with_other(&packed_data, payload);
+PackageDescriptor::DataSize PackageDescriptor::data_size(const Data& desc_data) const {
+	DataSize result(0UL);
+	std::for_each(
+		desc_data.begin() + m_signature.size(),
+		desc_data.end(),
+		[&](const auto& ch) {
+			result <<= sizeof(char) * BITS_IN_BYTE;
+			result |= static_cast<DataSize>(ch);
+		}
+	);
+	return result;
+}
 
+PackageDescriptor::Data PackageDescriptor::pack(const Data& raw_data) const {
+	const Data packed_data_size(pack_data_size(raw_data.size()));
+	Data packed_data(m_signature);
+	packed_data.insert(packed_data.end(), packed_data_size.begin(), packed_data_size.end());
+	packed_data.insert(packed_data.end(), raw_data.begin(), raw_data.end());
 	return packed_data;
 }
 
-PackageDescriptor::PackageData PackageDescriptor::pack_payload_length(const std::size_t& payload_length) const {
-	PackageData packed_payload_length;
-	for (int i = 0; i < m_payload_length_field_size; ++i) {
-		const int bits_to_shift = BITS_IN_BYTE * (m_payload_length_field_size - i - 1);
-		char placeholder_value = static_cast<char>((payload_length >> bits_to_shift) & BYTE_MASK);
-		packed_payload_length.push_back(placeholder_value);
+PackageDescriptor::Data PackageDescriptor::pack_data_size(const DataSize& data_size) {
+	Data packed_data_size;
+	int shift = (sizeof(DataSize) - 1) * BITS_IN_BYTE;
+	while (shift >= 0) {
+		const char ch = static_cast<const char>((data_size >> shift) & 0xFF);
+		packed_data_size.push_back(ch);
+		shift -= BITS_IN_BYTE;
 	}
-	return packed_payload_length;
-}
-
-std::size_t PackageDescriptor::unpack_payload_length(const PackageData& packed_payload_length) const {
-	if (m_payload_length_field_size != packed_payload_length.size()) {
-		throw std::invalid_argument("received packed data has wrong size");
-	}
-	std::size_t data_length(0UL);
-	std::for_each(
-		packed_payload_length.begin(),
-		packed_payload_length.end(),
-		[&](const char& length_ch) {
-			data_length <<= BITS_IN_BYTE;
-			data_length |= *((const unsigned char *)(&length_ch));
-		}
-	);
-	return data_length;
+	return packed_data_size;
 }

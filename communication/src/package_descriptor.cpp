@@ -1,7 +1,5 @@
-#include <stdexcept>
 #include <algorithm>
 #include <vector>
-#include <cstddef>
 
 #include "package_descriptor.hpp"
 

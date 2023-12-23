@@ -23,6 +23,7 @@ add_library(registry INTERFACE)
 target_include_directories(registry INTERFACE ${CMAKE_CURRENT_LIST_DIR}/include)
 
 add_subdirectory(data)
+add_subdirectory(io)
 add_subdirectory(task)
 add_subdirectory(json)
 add_subdirectory(communication)

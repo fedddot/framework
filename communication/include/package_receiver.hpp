@@ -2,22 +2,17 @@
 #define	__PACKAGE_RECEIVER_HPP__
 
 #include <vector>
+#include <functional>
 #include <cstddef>
 
-#include "ilistener.hpp"
-#include "dispatcher.hpp"
-#include "package_descriptor.hpp"
-
 namespace communication {
-	/// @brief Responsible to receive packed data byte-by-byte, validate header, calculate payload size and receive corresponding number of bytes as a payload. After the payload is received and processed notifies data listener (if set up)
-	class PackageReceiver: public common::IListener<char>, public common::Dispatcher<std::vector<char>> {
+	/// @brief Responsible to receive packed data byte-by-byte, validate header, calculate payload size and receive corresponding number of bytes as a payload. Once the payload is received and processed a callback specified on construction step will be called
+	class PackageReceiver {
 	public:
-		typedef std::vector<char> Payload;
+		typedef typename std::vector<char> Package;
+		typedef typename std::function<void(const Package&)> OnPackageReceived;
 
-		/// @brief Ctor, creates a new instance of class. The layout of receiving messages is configured and maintained by received PackageDescriptor instance
-		/// @param package_descriptor a const reference to PackageDescriptor instance describing the layout of receiving data
-		/// @param char_dispatcher <<TODO>>: describe
-		PackageReceiver(const PackageDescriptor& package_descriptor, common::Dispatcher<char>& char_dispatcher);
+		PackageReceiver(const std::size_t& package_length_field_size, const OnPackageReceived& on_pkg_received_callback);
 
 		PackageReceiver(const PackageReceiver& other) = delete;
 		PackageReceiver& operator=(const PackageReceiver& other) = delete;

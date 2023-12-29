@@ -5,6 +5,6 @@
 #include "iwriter.hpp"
 
 namespace io {
-	typedef IWriter<std::vector<char>> IBytesWriter;
+	using IBytesWriter = IWriter<std::vector<char>>;
 } // namespace io
 #endif // __IBYTES_WRITER_HPP__

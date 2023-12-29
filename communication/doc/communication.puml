@@ -1,0 +1,21 @@
+@startuml communication
+
+package communication {
+	interface IWriter<Tdata> {
+		write(const Tdata&): void
+	}
+
+	class CommunicationManager<Tid, Tmsg> {
+		+ CommunicationManager(IWriter<Tmsg>&, IReader<Tmsg>&)
+		+ post(const Tmsg&): void
+		+ subscribe(const Tid&, Listener<Tmsg>&): void
+		+ unsubscribe(const Tid&): void
+		+ feed(char ch): void;
+	}
+
+	CommunicationManager -up-|> CommunicationManager: implements
+
+	UartCommunicationManager .right.> Writer: uses\n<Tdata = Tmsg>
+}
+
+@enduml

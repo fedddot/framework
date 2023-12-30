@@ -9,7 +9,7 @@ namespace communication {
 	template <class Tid, class Tdata>
 	class CommunicationManager: public ICommunicationManager<Tid, Tdata> {
 	public:
-		using SendAction = std::function<void(const Tdata&)>;
+		typedef typename std::function<void(const Tdata&)> SendAction;
 		CommunicationManager(const SendAction& send_action);
 		virtual inline void subscribe(const Tid& id, generics::IListener<Tdata>& subscriber) override;
 		virtual inline void unsubscribe(const Tid& id) override;

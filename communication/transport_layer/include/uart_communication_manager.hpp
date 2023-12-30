@@ -8,41 +8,24 @@ namespace uart {
 	template <class Tid>
 	class UartCommunicationManager: public communication::CommunicationManager<Tid, char> {
 	public:
-		using BaudRate = uart_types::BaudRate;
-		using Parity = uart_types::Parity;
-		using StopBits = uart_types::StopBits;
-		using BitsNumber = uart_types::BitsNumber;
+		typedef typename communication::CommunicationManager<Tid, char>::SendAction SendAction;
+		inline UartCommunicationManager(const SendAction& send_action, const UartConfig& config);
+		UartCommunicationManager(const UartCommunicationManager& other) = default;
+		UartCommunicationManager& operator=(const UartCommunicationManager& other) = default;
 
-		UartCommunicationManager();
-
-		UartCommunicationManager(const UartCommunicationManager& other) = delete;
-		UartCommunicationManager& operator=(const UartCommunicationManager& other) = delete;
-
-		inline BaudRate baud_rate() const;
-		inline Parity parity() const;
-		inline StopBits stop_bits() const;
-		inline BitsNumber bits_number() const;
+		inline UartConfig config() const;
 	private:
-		BaudRate m_baud_rate;
-		Parity m_parity;
-		StopBits m_stop_bits;
-		BitsNumber m_bits_number;
+		UartConfig m_config;
 	};
 
-	inline UartCommunicationManager::BaudRate UartCommunicationManager::baud_rate() const {
-		return m_baud_rate;
+	template <class Tid>
+	inline UartCommunicationManager<Tid>::UartCommunicationManager(const SendAction& send_action, const UartConfig& config): communication::CommunicationManager<Tid, char>(send_action), m_config(config) {
+
 	}
 
-	inline UartCommunicationManager::Parity UartCommunicationManager::parity() const {
-		return m_parity;
-	}
-
-	inline UartCommunicationManager::StopBits UartCommunicationManager::stop_bits() const {
-		return m_stop_bits;
-	}
-
-	inline UartCommunicationManager::BitsNumber UartCommunicationManager::bits_number() const {
-		return m_bits_number;
+	template <class Tid>
+	inline UartConfig UartCommunicationManager<Tid>::config() const {
+		return m_config;
 	}
 }
 #endif // UART_COMMUNICATION_MANAGER_HPP

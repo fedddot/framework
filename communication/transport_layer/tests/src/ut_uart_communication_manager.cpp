@@ -1,47 +1,43 @@
 #include "gtest/gtest.h"
-#include "gtest/gtest-matchers.h"
-#include "gmock/gmock-more-matchers.h"
 #include <iostream>
 #include <functional>
 #include <ostream>
 #include <string>
 
-#include "ilistener.hpp"
+#include "test_listener.hpp"
 #include "uart_communication_manager.hpp"
+#include "uart_types.hpp"
 
 using namespace uart;
 using namespace generics;
-
-class TestListener: public IListener<std::string> {
-private:
-	std::function<void(const std::string&)> m_on_event_cb;
-public:
-	TestListener(const std::function<void(const std::string&)>& on_event_cb): m_on_event_cb(on_event_cb) {
-
-	}
-	virtual void on_event(const std::string& event) override {
-		m_on_event_cb(event);
-	}
-};
+using namespace generics_tests;
 
 TEST(ut_uart_communication_manager, sanity) {
 	// GIVEN
-	const std::string test_data("test_data");
-	auto data_sender = [&](const std::string& data)-> void {
-		std::cout << data << std::endl;
+	const std::string test_data = "ut_uart_communication_manager";
+	auto data_sender = [&](const char& data)-> void {
+		std::cout << "in data_sender: sending data \'" << data << "\'" << std::endl;	
 	};
 
-	auto event_action = [&](const std::string& data)-> void {
-		ASSERT_EQ(test_data, data);
-	};
-	
 	// WHEN
-	UartCommunicationManager<std::string> manager();
-	TestListener listener(event_action);
+	UartCommunicationManager<std::string> manager(data_sender, UartConfig());
 
-	// THEN
-	// ASSERT_NO_THROW(manager.subscribe("test_subscriber", listener));
-	// ASSERT_TRUE(manager.is_subscribed("test_subscriber"));
-	// ASSERT_NO_THROW(manager.dispatch(test_data));
-	// ASSERT_NO_THROW(manager.unsubscribe("test_subscriber"));
+	for (char ch: test_data) {
+		// WHEN
+		std::string test_listener_id("test_listener_" + std::to_string(ch));
+		TestListener<char> test_listener(
+			[&](const char& data)-> void {
+				std::cout << "[" << test_listener_id << "]: in event_action: received data \'" << data << "\'" << std::endl;	
+				ASSERT_EQ(ch, data);
+			}
+		);
+
+		// THEN
+		ASSERT_NO_THROW(manager.subscribe(test_listener_id, test_listener));
+		ASSERT_TRUE(manager.is_subscribed(test_listener_id));
+		ASSERT_NO_THROW(manager.feed(ch));
+		ASSERT_NO_THROW(manager.unsubscribe(test_listener_id));
+		ASSERT_FALSE(manager.is_subscribed(test_listener_id));
+		ASSERT_NO_THROW(manager.send(ch));
+	}
 }

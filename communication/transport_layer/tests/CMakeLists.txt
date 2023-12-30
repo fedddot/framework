@@ -8,6 +8,7 @@ target_link_libraries(
 	transport_layer_tests
 	PRIVATE
 	uart_communication_manager
+	test_listener
 	
 	gtest
 	gmock

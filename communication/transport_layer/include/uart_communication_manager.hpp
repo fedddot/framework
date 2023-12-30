@@ -1,42 +1,22 @@
-#ifndef	__UART_HPP__
-#define	__UART_HPP__
+#ifndef	UART_COMMUNICATION_MANAGER_HPP
+#define	UART_COMMUNICATION_MANAGER_HPP
 
-#include <vector>
+#include "communication_manager.hpp"
+#include "uart_types.hpp"
 
-#include "ilistener.hpp"
-#include "dispatcher.hpp"
-#include "isender.hpp"
-
-namespace communication {
-	class Uart: public ISender<std::vector<char>>, public common::Dispatcher<char> {
+namespace uart {
+	template <class Tid>
+	class UartCommunicationManager: public communication::CommunicationManager<Tid, char> {
 	public:
-		enum class BaudRate: int {
-			BR9600,
-			BR115200
-		};
+		using BaudRate = uart_types::BaudRate;
+		using Parity = uart_types::Parity;
+		using StopBits = uart_types::StopBits;
+		using BitsNumber = uart_types::BitsNumber;
 
-		enum class Parity: int {
-			NONE,
-			EVEN,
-			ODD
-		};
+		UartCommunicationManager();
 
-		enum class StopBits: int {
-			ONE,
-			TWO
-		};
-
-		enum class BitsNumber: int {
-			BN5,
-			BN6,
-			BN7,
-			BN8
-		};
-
-		Uart(BaudRate baud_rate = BaudRate::BR115200, Parity parity = Parity::NONE, StopBits stop_bits = StopBits::ONE, BitsNumber bits_number = BitsNumber::BN8);
-
-		Uart(const Uart& other) = delete;
-		Uart& operator=(const Uart& other) = delete;
+		UartCommunicationManager(const UartCommunicationManager& other) = delete;
+		UartCommunicationManager& operator=(const UartCommunicationManager& other) = delete;
 
 		inline BaudRate baud_rate() const;
 		inline Parity parity() const;
@@ -47,22 +27,22 @@ namespace communication {
 		Parity m_parity;
 		StopBits m_stop_bits;
 		BitsNumber m_bits_number;
-	}; // Uart
+	};
 
-	inline Uart::BaudRate Uart::baud_rate() const {
+	inline UartCommunicationManager::BaudRate UartCommunicationManager::baud_rate() const {
 		return m_baud_rate;
 	}
 
-	inline Uart::Parity Uart::parity() const {
+	inline UartCommunicationManager::Parity UartCommunicationManager::parity() const {
 		return m_parity;
 	}
 
-	inline Uart::StopBits Uart::stop_bits() const {
+	inline UartCommunicationManager::StopBits UartCommunicationManager::stop_bits() const {
 		return m_stop_bits;
 	}
 
-	inline Uart::BitsNumber Uart::bits_number() const {
+	inline UartCommunicationManager::BitsNumber UartCommunicationManager::bits_number() const {
 		return m_bits_number;
 	}
-} // namespace communication
-#endif // __UART_HPP__
+}
+#endif // UART_COMMUNICATION_MANAGER_HPP

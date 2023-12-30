@@ -12,6 +12,7 @@ target_link_libraries(
 	# package_descriptor
 	# package_receiver
 	communication_manager
+	test_listener
 	
 	gtest
 	gmock

@@ -1,28 +1,15 @@
 #include "gtest/gtest.h"
-#include "gtest/gtest-matchers.h"
-#include "gmock/gmock-more-matchers.h"
 #include <iostream>
 #include <functional>
 #include <ostream>
 #include <string>
 
-#include "ilistener.hpp"
+#include "test_listener.hpp"
 #include "communication_manager.hpp"
 
 using namespace communication;
 using namespace generics;
-
-class TestListener: public IListener<std::string> {
-private:
-	std::function<void(const std::string&)> m_on_event_cb;
-public:
-	TestListener(const std::function<void(const std::string&)>& on_event_cb): m_on_event_cb(on_event_cb) {
-
-	}
-	virtual void on_event(const std::string& event) override {
-		m_on_event_cb(event);
-	}
-};
+using namespace generics_tests;
 
 TEST(ut_communication_manager, sanity) {
 	// GIVEN
@@ -37,11 +24,11 @@ TEST(ut_communication_manager, sanity) {
 	
 	// WHEN
 	CommunicationManager<std::string, std::string> manager(data_sender);
-	TestListener listener(event_action);
+	TestListener<std::string> listener(event_action);
 
 	// THEN
 	ASSERT_NO_THROW(manager.subscribe("test_subscriber", listener));
 	ASSERT_TRUE(manager.is_subscribed("test_subscriber"));
-	ASSERT_NO_THROW(manager.dispatch(test_data));
+	ASSERT_NO_THROW(manager.feed(test_data));
 	ASSERT_NO_THROW(manager.unsubscribe("test_subscriber"));
 }

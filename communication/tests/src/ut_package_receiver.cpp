@@ -15,7 +15,7 @@
 
 using namespace testing;
 using namespace communication;
-using namespace common;
+using namespace generics;
 
 class TestListener: public IListener<std::vector<char>> {
 public:

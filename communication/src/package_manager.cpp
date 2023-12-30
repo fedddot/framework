@@ -10,7 +10,7 @@
 #include "package_manager.hpp"
 
 using namespace communication;
-using namespace common;
+using namespace generics;
 
 PackageManager::PackageManager(const PackageDescriptor& package_descriptor, ISender<std::vector<char>>& packed_data_sender, Dispatcher<char>& char_dispatcher): m_receiver(package_descriptor, char_dispatcher), m_sender(package_descriptor, packed_data_sender) {
 

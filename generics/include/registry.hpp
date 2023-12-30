@@ -4,7 +4,7 @@
 #include <map>
 #include <stdexcept>
 
-namespace common {
+namespace generics {
 	template <class Tkey, class Tmember>
 	class Registry {
 	public:
@@ -49,5 +49,5 @@ namespace common {
 	bool Registry<Tkey, Tmember>::is_registered(const Tkey& key) const {
 		return m_members.end() != m_members.find(key);
 	}
-} // namespace common
+} // namespace generics
 #endif // __REGISTRY_HPP__

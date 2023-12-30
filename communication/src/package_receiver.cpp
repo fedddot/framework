@@ -10,7 +10,7 @@
 #include "package_receiver.hpp"
 
 using namespace communication;
-using namespace common;
+using namespace generics;
 
 PackageReceiver::PackageReceiver(const PackageDescriptor& package_descriptor, common::Dispatcher<char>& char_dispatcher): m_package_descriptor(package_descriptor), m_char_dispatcher(char_dispatcher) {
 	reset_receiver();

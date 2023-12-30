@@ -1,25 +1,20 @@
 #include "gtest/gtest.h"
-#include "gtest/gtest-matchers.h"
-#include "gmock/gmock-more-matchers.h"
 #include <iostream>
 #include <string>
 
 #include "dispatcher.hpp"
-#include "ilistener.hpp"
+#include "test_listener.hpp"
 
 using namespace generics;
-
-class TestListener: public IListener<std::string> {
-public:
-	virtual void on_event(const std::string& event) {
-		std::cout << event << std::endl;
-	}
-};
+using namespace generics_tests;
 
 TEST(ut_dispatcher, sanity) {
 	// GIVEN:
-	TestListener lis1;
-	TestListener lis2;
+	auto on_event = [&](const std::string& event)-> void {
+		std::cout << event << std::endl;
+	};
+	TestListener<std::string> lis1(on_event);
+	TestListener<std::string> lis2(on_event);
 	Dispatcher<int, std::string> dispatcher;
 
 	// THEN:

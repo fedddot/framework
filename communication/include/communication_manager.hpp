@@ -4,10 +4,11 @@
 #include <functional>
 #include "dispatcher.hpp"
 #include "icommunication_manager.hpp"
+#include "ilistener.hpp"
 
 namespace communication {
 	template <class Tid, class Tdata>
-	class CommunicationManager: public ICommunicationManager<Tid, Tdata> {
+	class CommunicationManager: public ICommunicationManager<Tid, Tdata>, public generics::IListener<Tdata> {
 	public:
 		typedef typename std::function<void(const Tdata&)> SendAction;
 		CommunicationManager(const SendAction& send_action);
@@ -15,7 +16,7 @@ namespace communication {
 		virtual inline void unsubscribe(const Tid& id) override;
 		virtual inline bool is_subscribed(const Tid& id) const override;
 		virtual inline void send(const Tdata& data) override;
-		inline void feed(const Tdata& data);
+		virtual inline void on_event(const Tdata& event) override;
 	private:
 		SendAction m_send_action;
 		generics::Dispatcher<Tid, Tdata> m_dispatcher;
@@ -48,9 +49,8 @@ namespace communication {
 	}
 
 	template <class Tid, class Tdata>
-	inline void CommunicationManager<Tid, Tdata>::feed(const Tdata& data) {
-		m_dispatcher.dispatch(data);
+	inline void CommunicationManager<Tid, Tdata>::on_event(const Tdata& event) {
+		m_dispatcher.dispatch(event);
 	}
-
 } // namespace communication
 #endif // COMMUNICATION_MANAGER_HPP

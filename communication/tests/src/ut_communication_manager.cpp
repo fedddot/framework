@@ -29,6 +29,6 @@ TEST(ut_communication_manager, sanity) {
 	// THEN
 	ASSERT_NO_THROW(manager.subscribe("test_subscriber", listener));
 	ASSERT_TRUE(manager.is_subscribed("test_subscriber"));
-	ASSERT_NO_THROW(manager.feed(test_data));
+	ASSERT_NO_THROW(manager.on_event(test_data));
 	ASSERT_NO_THROW(manager.unsubscribe("test_subscriber"));
 }

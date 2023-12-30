@@ -7,7 +7,7 @@
 #include "registry.hpp"
 #include "icreator.hpp"
 
-namespace common {
+namespace generics {
 	template <class Tkey, class Tprod, class Tconf>
 	class Factory {
 	public:
@@ -53,5 +53,5 @@ namespace common {
 	bool Factory<Tkey, Tprod, Tconf>::is_registered(const Tkey& key) const {
 		return m_creators_registry.is_registered(key);
 	}
-} // namespace common
+} // namespace generics
 #endif // __FACTORY_HPP__

@@ -1,7 +1,7 @@
 #ifndef	__ICREATOR_HPP__
 #define	__ICREATOR_HPP__
 
-namespace common {
+namespace generics {
 	template <class Tprod, class Tconf>
 	class ICreator {
 	public:
@@ -13,5 +13,5 @@ namespace common {
 	ICreator<Tprod, Tconf>::~ICreator() noexcept {
 
 	}
-} // namespace common
+} // namespace generics
 #endif // __ICREATOR_HPP__

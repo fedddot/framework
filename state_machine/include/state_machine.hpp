@@ -33,7 +33,7 @@ namespace state_machine {
 	StateMachine<Tstate_id, Tcontext, Tevent>::StateMachine(const std::string& name, const States& states, const Tstate_id& initial_state): m_name(name), m_context(), m_states(states), m_state(m_states.end()) {
 		auto iter = m_states.find(initial_state);
 		if (m_states.end() == iter) {
-			throw std::invalid_argument("invalid states received");
+			throw std::invalid_argument("initial state is not in received states");
 		}
 		m_state = iter;
 	}
@@ -43,7 +43,7 @@ namespace state_machine {
 		auto next_state_id = (m_state->second)(&m_context, m_state->first, event);
 		auto next_state_iter = m_states.find(next_state_id);
 		if (m_states.end() == next_state_iter) {
-			throw std::runtime_error("invalid state returned by state handler");
+			throw std::runtime_error("next state returned by state handler is not in received states");
 		}
 		m_state = next_state_iter;
 	}

@@ -5,17 +5,17 @@ package communication {
 		write(const Tdata&): void
 	}
 
-	class CommunicationManager<Tid, Tmsg> {
-		+ CommunicationManager(IWriter<Tmsg>&, IReader<Tmsg>&)
-		+ post(const Tmsg&): void
-		+ subscribe(const Tid&, Listener<Tmsg>&): void
+	class CommunicationManager<Tid, Tdata> {
+		+ CommunicationManager(IWriter<Tdata>&, IReader<Tdata>&)
+		+ post(const Tdata&): void
+		+ subscribe(const Tid&, Listener<Tdata>&): void
 		+ unsubscribe(const Tid&): void
 		+ feed(char ch): void;
 	}
 
 	CommunicationManager -up-|> CommunicationManager: implements
 
-	UartCommunicationManager .right.> Writer: uses\n<Tdata = Tmsg>
+	UartCommunicationManager .right.> Writer: uses\n<Tdata = Tdata>
 }
 
 @enduml
